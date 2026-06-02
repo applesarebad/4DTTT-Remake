@@ -1,10 +1,45 @@
 ---
 import Layout from '../layouts/base.astro';
-
+import "../styles/global.css";
 ---
 
 <Layout>
-
+    <div id = "header" class = "bg-green-200 text-3xl">header</div>
+    <div class = "flex flex-box ">
+        <div id = "board" class = "w-[95vh] bg-blue-200 p-5"></div>
+        <div id = "side" class = "bg-red-200">sdfgdfssdfgdf</div>
+    </div>
+    
 </Layout>
 
+<script>
+    import * as game from "../scripts/game.js"
+    
+    let board = document.getElementById("board")
+    if (board == null){board = document.createElement("div")}
+
+    let n = 5
+    board.style.display = "grid"
+    board.style.gridTemplateColumns = `repeat(${n}, 1fr)`
+    board.style.gap = "12px"
+
+    for(let i = 0; i < n; i++){
+        for(let j = 0; j < n; j++){
+            let sub = document.createElement("div")
+            sub.style.display = "grid"
+            sub.style.gridTemplateColumns = `repeat(${n}, 1fr)`
+            sub.style.gap = "2px"
+            board.appendChild(sub)
+
+            for(let k = 0; k < n; k++){
+                for(let l = 0; l < n; l++){
+                    let cell = document.createElement("div")
+                    cell.className = "bg-white aspect-square"
+                    cell.dataset.pos = `${i},${j},${k},${l}`
+                    sub.appendChild(cell)
+                }
+            }
+        }
+    }   
+</script>
 
