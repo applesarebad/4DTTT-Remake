@@ -14,7 +14,7 @@ import "../styles/global.css";
 <script>
     import * as game from "../scripts/game.js";
 
-    game.init(5)
+ 
 
     let board = document.getElementById("board");
     if (board == null) {
@@ -77,4 +77,6 @@ import "../styles/global.css";
     board.addEventListener("mouseleave", function (event) {
         game.onUnhover()
     });
+
+    game.init(5)
 </script>
