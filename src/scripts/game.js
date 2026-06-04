@@ -5,15 +5,17 @@ let n = 5
 let turn = 1
 let gameover = false
 let prevCoord = null
-let boxes = {} 
+let boxes = []
+let board = null
 
 export function init(size) {
 
     turn = 1
     gameover = false
     prevCoord = null
-    boxes = {}
+    boxes = []
     n = size
+    board = document.getElementById('board')
     boxes = Array.from({ length: n }, () =>
         Array.from({ length: n }, () =>
             Array.from({ length: n }, () =>
@@ -26,6 +28,7 @@ export function init(size) {
     )
 
     document.querySelectorAll('.cell').forEach(el => {
+        el.className = "cell bg-white aspect-square rounded-sm";
         const [x, y, w, z] = el.dataset.pos.split(',').map(Number)
         boxes[x][y][w][z].el = el
     })
@@ -43,41 +46,55 @@ export function setState(x, y, w, z, value) {
     boxes[x][y][w][z].state = value
 }
 
+export function allboxes(){
+    let all = []
+    for(let i of boxes){
+        for(let j of i){
+            for(let k of j){
+                for(let l of k){
+                    all.push(l)
+                }
+            }
+        }
+    }
+    return all
+}
+
 export function onClick(x, y, w, z) {
+    //ignore when its not good inptu
     if (gameover) return
     if (getState(x, y, w, z) !== null) return
-    console.log(turn, "switching")
 
+    //actual change 
     setState(x, y, w, z, turn)
-
-
     const cell = get(x, y, w, z)
     onUnhover()
-    if (cell) cell.style.background = turn === 1 ? '#ffaaaa' : '#aaaaff'
     claimCell(x, y, w, z, turn)
 
-    if (prevCoord != null) get(...prevCoord).style.border = "none"
+    //swithciugn the border
+    if (prevCoord != null) get(...prevCoord).style.outline = "none"
     prevCoord = [x, y, w, z]
-    get(...prevCoord).style.border = turn === 1 ? "1px solid red" : "1px solid blue"
-    console.log(turn, "switching")
-    const lines = checkPossibleLines([x, y, w, z])
+    get(...prevCoord).style.outline = turn === 1 ? "1px solid red" : "1px solid blue"
+    
+    wincheck(x,y,w,z)
+    turn = turn === 1 ? 2 : 1
+}
+
+export function wincheck(x,y,w,z){
+     const lines = checkPossibleLines([x, y, w, z])
     for (const line of lines) {
         const states = line.map(p => getState(...p))
         if (states.every(s => s === states[0] && s !== null)) {
             gameover = true
             for (const point of line) {
                 const el = get(...point)
-                if (el) el.style.outline = '2px solid gold'
+                if (el) el.style.outline = turn === 1 ? "2px solid red" : "2px solid blue"
             }
             console.log(`player ${turn} wins!`)
             return
         }
     }
-    console.log(turn, "switching")
-    turn = turn === 1 ? 2 : 1
-    console.log(turn, "switching")
 }
-
 export function claimCell(x, y, w, z, player) {
     const el = get(x, y, w, z)
     const img = document.createElement('img')
@@ -111,18 +128,16 @@ export function onHover(x, y, w, z) {
 
         for (const point of line) {
             const el = get(...point)
-            if (el && getState(...point) === null) el.style.background = colour
+            el.style.background = colour
         }
         get(x, y, w, z).style.background = colour
     })
 }
 
 export function onUnhover() {
-    document.querySelectorAll('.cell').forEach(el => {
-        const pos = el.dataset.pos
-        const [x, y, w, z] = pos.split(',').map(Number)
-        if (getState(x, y, w, z) === null) el.style.background = 'white'
-    })
+    for(let b of allboxes()){
+        b.el.style.background = "white"
+    }
 }
 
 export function reset() {
