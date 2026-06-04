@@ -37,7 +37,7 @@ import "../styles/global.css";
             for (let k = 0; k < n; k++) {
                 for (let l = 0; l < n; l++) {
                     let cell = document.createElement("div");
-                    cell.className = "cell bg-white aspect-square";
+                    cell.className = "cell bg-white aspect-square rounded-sm";
                     cell.dataset.pos = `${l},${k},${j},${i}`;
                     sub.appendChild(cell);
                 }

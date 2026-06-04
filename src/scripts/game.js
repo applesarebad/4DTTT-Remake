@@ -5,25 +5,30 @@ let n = 5
 let turn = 1
 let gameover = false
 let prevCoord = null
-let boxes = {} // key: "x,y,w,z" -> { state: null | 1 | 2 }
+let boxes = {} 
 
 export function init(size) {
-  n = size
-  boxes = Array.from({length: n}, () =>
-    Array.from({length: n}, () =>
-      Array.from({length: n}, () =>
-        Array.from({length: n}, () => ({
-          state: null,
-          el: null
-        }))
-      )
-    )
-  )
 
-  document.querySelectorAll('.cell').forEach(el => {
-    const [x,y,w,z] = el.dataset.pos.split(',').map(Number)
-    boxes[x][y][w][z].el = el
-  })
+    turn = 1
+    gameover = false
+    prevCoord = null
+    boxes = {}
+    n = size
+    boxes = Array.from({ length: n }, () =>
+        Array.from({ length: n }, () =>
+            Array.from({ length: n }, () =>
+                Array.from({ length: n }, () => ({
+                    state: null,
+                    el: null
+                }))
+            )
+        )
+    )
+
+    document.querySelectorAll('.cell').forEach(el => {
+        const [x, y, w, z] = el.dataset.pos.split(',').map(Number)
+        boxes[x][y][w][z].el = el
+    })
 }
 
 export function get(x, y, w, z) {
@@ -44,12 +49,16 @@ export function onClick(x, y, w, z) {
     console.log(turn, "switching")
 
     setState(x, y, w, z, turn)
-    prevCoord = [x, y, w, z]
+
 
     const cell = get(x, y, w, z)
     onUnhover()
     if (cell) cell.style.background = turn === 1 ? '#ffaaaa' : '#aaaaff'
-    claimCell(x,y,w,z, turn)
+    claimCell(x, y, w, z, turn)
+
+    if (prevCoord != null) get(...prevCoord).style.border = "none"
+    prevCoord = [x, y, w, z]
+    get(...prevCoord).style.border = turn === 1 ? "1px solid red" : "1px solid blue"
     console.log(turn, "switching")
     const lines = checkPossibleLines([x, y, w, z])
     for (const line of lines) {
@@ -70,23 +79,23 @@ export function onClick(x, y, w, z) {
 }
 
 export function claimCell(x, y, w, z, player) {
-  const el = get(x, y, w, z)
-  const img = document.createElement('img')
-  img.src = `/${player === 1 ? 'X' : 'O'}/0.png`
-  img.style.width = '100%'
-  img.style.height = '100%'
-  img.style.pointerEvents = 'none'
-  el.appendChild(img)
+    const el = get(x, y, w, z)
+    const img = document.createElement('img')
+    img.src = `/${player === 1 ? 'X' : 'O'}/0.png`
+    img.style.width = '100%'
+    img.style.height = '100%'
+    img.style.pointerEvents = 'none'
+    el.appendChild(img)
 
-  let frame = 1
-  const interval = setInterval(() => {
-    frame++
-    if (frame >= 7) {
-      clearInterval(interval)
-      return
-    }
-    img.src = `/${player === 1 ? 'X' : 'O'}/${frame}.png`
-  }, 50) // 50ms per frame = 20fps, adjust to taste
+    let frame = 1
+    const interval = setInterval(() => {
+        frame++
+        if (frame >= 7) {
+            clearInterval(interval)
+            return
+        }
+        img.src = `/${player === 1 ? 'X' : 'O'}/${frame}.png`
+    }, 50) 
 }
 
 
@@ -97,15 +106,15 @@ export function onHover(x, y, w, z) {
     const COLOURS = ['#ffaaaa', '#aaaaff']
     let colour = turn === 1
         ? COLOURS[0] : COLOURS[1]
-    if (getState(x,y,w,z) !== null) colour = COLOURS[getState(x,y,w,z) - 1]
+    if (getState(x, y, w, z) !== null) colour = COLOURS[getState(x, y, w, z) - 1]
     lines.forEach((line) => {
-        
+
         for (const point of line) {
-        const el = get(...point) 
-        if (el && getState(...point) === null) el.style.background = colour
-    }
-    get(x, y, w, z).style.background = colour
-})
+            const el = get(...point)
+            if (el && getState(...point) === null) el.style.background = colour
+        }
+        get(x, y, w, z).style.background = colour
+    })
 }
 
 export function onUnhover() {
@@ -114,10 +123,6 @@ export function onUnhover() {
         const [x, y, w, z] = pos.split(',').map(Number)
         if (getState(x, y, w, z) === null) el.style.background = 'white'
     })
-    // if (prevCoord) {
-    //     const el = get(...prevCoord)
-    //     if (el) el.style.background = turn === 2 ? '#ffaaaa' : '#aaaaff'
-    // }
 }
 
 export function reset() {
