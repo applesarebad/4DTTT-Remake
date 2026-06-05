@@ -32,6 +32,13 @@ export function init(size) {
         const [x, y, w, z] = el.dataset.pos.split(',').map(Number)
         boxes[x][y][w][z].el = el
     })
+    turnsetup()
+}
+
+export function turnsetup(){
+    document.getElementById("turnmsg").innerHTML = turn === 1 ? `X's turn` : `O's turn`
+    animation(document.getElementById("turn"),1)
+    document.getElementById("all").style.backgroundColor = turn === 1 ? "#ffcccc" : "#ccccff"
 }
 
 export function get(x, y, w, z) {
@@ -77,7 +84,9 @@ export function onClick(x, y, w, z) {
     get(...prevCoord).style.outline = turn === 1 ? "1px solid red" : "1px solid blue"
     
     wincheck(x,y,w,z)
+
     turn = turn === 1 ? 2 : 1
+    turnsetup()
 }
 
 export function wincheck(x,y,w,z){
@@ -104,23 +113,25 @@ export function claimCell(x, y, w, z, player) {
     img.style.pointerEvents = 'none'
     el.appendChild(img)
 
-    let frame = 1
+    animation(img, player)
+}
+
+export function animation(el, n){
+    let frame = 0
     const interval = setInterval(() => {
         frame++
         if (frame >= 7) {
             clearInterval(interval)
             return
         }
-        img.src = `/${player === 1 ? 'X' : 'O'}/${frame}.png`
-    }, 50) 
+        el.src = `/${n === 1 ? 'X' : 'O'}/${frame}.png`
+    }, 40) 
 }
-
-
 export function onHover(x, y, w, z) {
     onUnhover()
     console.log(turn)
     const lines = checkPossibleLines([x, y, w, z])
-    const COLOURS = ['#ffaaaa', '#aaaaff']
+    const COLOURS = ['#ff8888', '#8888ff']
     let colour = turn === 1
         ? COLOURS[0] : COLOURS[1]
     if (getState(x, y, w, z) !== null) colour = COLOURS[getState(x, y, w, z) - 1]

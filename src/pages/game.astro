@@ -4,79 +4,102 @@ import "../styles/global.css";
 ---
 
 <Layout>
-    <div id="header" class="bg-green-200 text-3xl">header</div>
-    <div class="flex flex-box">
-        <div id="board" class="w-[95vh] bg-blue-200 p-5"></div>
-        <div id="side" class="bg-red-200">sdfgdfssdfgdf</div>
+    <div id = "all" class="flex justify-center items-center">
+        <div id="titleside" class="flex min-w-[15%] flex-col gap-4  self-stretch items-center">
+            
+            <div id = "back" class = "pt-10"> back</div>
+        </div>
+        <div id="board" class="w-[min(100vh,100vw)] aspect-square p-2 flex-shrink-0"></div>
+        <div id="infoside" class="gap-4 items-center flex flex-1 flex-col self-stretch justify-center">
+            <div id = "header">title </div>
+            <div class = "h-[10%]"></div>
+            <div class = "items-center flex flex-col">
+                <img id = "turn" class = "max-w-[70%] aspect-square">
+                <p id = "turnmsg"></p>
+            </div>
+            <div class = "h-[20%]"></div>
+            <div id ="reset">reset</div>
+        </div>
     </div>
 </Layout>
 
 <script>
     import * as game from "../scripts/game.js";
+    let n = 4;
+    start()
+    function start(){
+        let board = document.getElementById("board");
+        if (board == null) {
+            board = document.createElement("div");
+        }
+        board.replaceChildren()
+        
+        board.style.display = "grid";
+        board.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
+        board.style.gap = "10px";
 
- 
+        for (let i = 0; i < n; i++) {
+            for (let j = 0; j < n; j++) {
+                let sub = document.createElement("div");
+                sub.style.display = "grid";
+                sub.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
+                sub.style.gap = "2px";
+                board.appendChild(sub);
 
-    let board = document.getElementById("board");
-    if (board == null) {
-        board = document.createElement("div");
+                for (let k = 0; k < n; k++) {
+                    for (let l = 0; l < n; l++) {
+                        let cell = document.createElement("div");
+                        cell.className = "cell bg-white aspect-square rounded-sm";
+                        cell.dataset.pos = `${l},${k},${j},${i}`;
+                        sub.appendChild(cell);
+                    }
+                }
+            }
+        }
+
+        board.addEventListener("click", function (event) {
+            if (event.target instanceof HTMLElement) {
+                if (event.target.classList.contains("cell")) {
+                    const cell = event.target;
+                    const pos = event.target.dataset.pos;
+
+                    if (pos) {
+                        const [x, y, w, z] = pos.split(",").map(Number);
+                        console.log(x,y,w,z);
+                        game.onClick(x, y, w, z)
+                    }
+                }
+            }
+        });
+
+        board.addEventListener("mouseover", function (event) {
+            if (event.target instanceof HTMLElement) {
+                if (event.target.classList.contains("cell")) {
+                    const cell = event.target;
+                    const pos = event.target.dataset.pos;
+
+                    if (pos) {
+                        const [x, y, w, z] = pos.split(",").map(Number);
+                        game.onHover(x, y, w, z)
+                    }
+                }
+            }
+        });
+
+        board.addEventListener("mouseleave", function (event) {
+            game.onUnhover()
+        });
+        game.init(n)
     }
 
-    let n = 5;
-    board.style.display = "grid";
-    board.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
-    board.style.gap = "10px";
-
-    for (let i = 0; i < n; i++) {
-        for (let j = 0; j < n; j++) {
-            let sub = document.createElement("div");
-            sub.style.display = "grid";
-            sub.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
-            sub.style.gap = "2px";
-            board.appendChild(sub);
-
-            for (let k = 0; k < n; k++) {
-                for (let l = 0; l < n; l++) {
-                    let cell = document.createElement("div");
-                    cell.className = "cell bg-white aspect-square rounded-sm";
-                    cell.dataset.pos = `${l},${k},${j},${i}`;
-                    sub.appendChild(cell);
-                }
-            }
-        }
+    const reset = document.getElementById("reset");
+    if (reset) {
+        reset.addEventListener("click", function() {
+            console.log(123)
+            start()
+        })
     }
+    const header = document.getElementById("header");
+    if (header) header.innerHTML = n + (" X " + n).repeat(n-1) + " Tic Tac Toe"
 
-    board.addEventListener("click", function (event) {
-        if (event.target instanceof HTMLElement) {
-            if (event.target.classList.contains("cell")) {
-                const cell = event.target;
-                const pos = event.target.dataset.pos;
-
-                if (pos) {
-                    const [x, y, w, z] = pos.split(",").map(Number);
-                    console.log(x,y,w,z);
-                    game.onClick(x, y, w, z)
-                }
-            }
-        }
-    });
-
-    board.addEventListener("mouseover", function (event) {
-        if (event.target instanceof HTMLElement) {
-            if (event.target.classList.contains("cell")) {
-                const cell = event.target;
-                const pos = event.target.dataset.pos;
-
-                if (pos) {
-                    const [x, y, w, z] = pos.split(",").map(Number);
-                    game.onHover(x, y, w, z)
-                }
-            }
-        }
-    });
-
-    board.addEventListener("mouseleave", function (event) {
-        game.onUnhover()
-    });
-
-    game.init(5)
 </script>
