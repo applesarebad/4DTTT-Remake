@@ -4,36 +4,66 @@ import "../styles/global.css";
 ---
 
 <Layout>
-    <div id = "all" class="flex justify-center items-center">
-        <div id="titleside" class="flex min-w-[15%] flex-col gap-4  self-stretch items-center">
-            
-            <div id = "back" class = "pt-10"> back</div>
+    <div id="all" class="flex justify-center items-center">
+        <div
+            id="titleside"
+            class="flex min-w-[15%] flex-col gap-4 self-stretch items-center p-10"
+        >
+            <a
+                id="back"
+                class="bg-purple-300 text-purple-900 text-xl font-bold px-4 py-2 rounded-sm hover:bg-purple-400"
+                href = "/"
+            >
+                back
+            </a>
         </div>
-        <div id="board" class="w-[min(100vh,100vw)] aspect-square p-2 flex-shrink-0"></div>
-        <div id="infoside" class="gap-4 items-center flex flex-1 flex-col self-stretch justify-center">
-            <div id = "header">title </div>
-            <div class = "h-[10%]"></div>
-            <div class = "items-center flex flex-col">
-                <img id = "turn" class = "max-w-[70%] aspect-square">
-                <p id = "turnmsg"></p>
+        <div
+            id="board"
+            class="min-w-[min(100vh,100vw)] max-w-[min(100vh,100vw)] aspect-square p-2 flex-shrink-0"
+        >
+        </div>
+        <div
+            id="infoside"
+            class="gap-4 items-center flex flex-1 flex-col self-stretch justify-center"
+        >
+            <div id="header" class="text-4xl font-bold">title</div>
+            <div class="h-[10%]"></div>
+            <div class="items-center flex flex-col">
+                <img id="turn" class="max-w-[70%] aspect-square" />
+                <p id="turnmsg" class="text-xl font-bold"></p>
             </div>
-            <div class = "h-[20%]"></div>
-            <div id ="reset">reset</div>
+            <div class="h-[20%]"></div>
+            <div
+                id="reset"
+                class="bg-purple-300 text-purple-900 text-xl font-bold px-4 py-2 rounded-sm hover:bg-purple-400"
+            >
+                reset
+            </div>
         </div>
     </div>
 </Layout>
 
+<style>
+    @import url("https://fonts.googleapis.com/css2?family=Indie+Flower&display=swap");
+    @import url("https://fonts.googleapis.com/css2?family=Schoolbell&display=swap");
+    * {
+        font-family: "Schoolbell", cursive;
+        font-style: bold;
+    }
+</style>
+
 <script>
     import * as game from "../scripts/game.js";
-    let n = 4;
-    start()
-    function start(){
+    let n = 6;
+    let d = 4;
+    start();
+    function start() {
         let board = document.getElementById("board");
         if (board == null) {
             board = document.createElement("div");
         }
-        board.replaceChildren()
-        
+        board.replaceChildren();
+
         board.style.display = "grid";
         board.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
         board.style.gap = "10px";
@@ -43,17 +73,27 @@ import "../styles/global.css";
                 let sub = document.createElement("div");
                 sub.style.display = "grid";
                 sub.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
+                sub.className = "aspect-square";
                 sub.style.gap = "2px";
-                board.appendChild(sub);
 
                 for (let k = 0; k < n; k++) {
                     for (let l = 0; l < n; l++) {
                         let cell = document.createElement("div");
-                        cell.className = "cell bg-white aspect-square rounded-sm";
+                        cell.className =
+                            "cell bg-white aspect-square rounded-sm";
                         cell.dataset.pos = `${l},${k},${j},${i}`;
                         sub.appendChild(cell);
+
+                        if (d == 3 && i != j) {
+                            cell.style.display = "none";
+                        } else if (d == 2 && (j != 0 || i != 0)) {
+                            cell.style.display = "none";
+                            sub.style.display = "none";
+                            board.style.display = "block";
+                        } 
                     }
                 }
+                board.appendChild(sub);
             }
         }
 
@@ -65,8 +105,8 @@ import "../styles/global.css";
 
                     if (pos) {
                         const [x, y, w, z] = pos.split(",").map(Number);
-                        console.log(x,y,w,z);
-                        game.onClick(x, y, w, z)
+                        console.log(x, y, w, z);
+                        game.onClick(x, y, w, z);
                     }
                 }
             }
@@ -80,26 +120,26 @@ import "../styles/global.css";
 
                     if (pos) {
                         const [x, y, w, z] = pos.split(",").map(Number);
-                        game.onHover(x, y, w, z)
+                        game.onHover(x, y, w, z);
                     }
                 }
             }
         });
 
         board.addEventListener("mouseleave", function (event) {
-            game.onUnhover()
+            game.onUnhover();
         });
-        game.init(n)
+        game.init(n);
     }
 
     const reset = document.getElementById("reset");
     if (reset) {
-        reset.addEventListener("click", function() {
-            console.log(123)
-            start()
-        })
+        reset.addEventListener("click", function () {
+            console.log(123);
+            start();
+        });
     }
     const header = document.getElementById("header");
-    if (header) header.innerHTML = n + (" X " + n).repeat(n-1) + " Tic Tac Toe"
-
+    if (header)
+        header.innerHTML = n + (" X " + n).repeat(d-1) + " Tic Tac Toe";
 </script>

@@ -37,7 +37,7 @@ export function init(size) {
 
 export function turnsetup(){
     document.getElementById("turnmsg").innerHTML = turn === 1 ? `X's turn` : `O's turn`
-    animation(document.getElementById("turn"),1)
+    animation(document.getElementById("turn"),turn)
     document.getElementById("all").style.backgroundColor = turn === 1 ? "#ffcccc" : "#ccccff"
 }
 
