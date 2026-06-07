@@ -12,7 +12,7 @@ import "../styles/global.css";
             <a
                 id="back"
                 class="bg-purple-300 text-purple-900 text-xl font-bold px-4 py-2 rounded-sm hover:bg-purple-400"
-                href = "/"
+                href="/"
             >
                 back
             </a>
@@ -50,15 +50,16 @@ import "../styles/global.css";
         font-family: "Schoolbell", cursive;
         font-weight: bold;
     }
-    
 </style>
-
+<script
+    src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"
+></script>
 <script>
     // @ts-nocheck
     import * as game from "../scripts/game.js";
     let n = parseInt(localStorage.getItem("n")) || 4;
     let d = parseInt(localStorage.getItem("d")) || 4;
-    let wmult = (n <= 3 || d <= 2) ? 2 : 1
+    let wmult = n <= 3 || d <= 2 ? 2 : 1;
     start();
     function start() {
         let board = document.getElementById("board");
@@ -77,7 +78,7 @@ import "../styles/global.css";
                 sub.style.display = "grid";
                 sub.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
                 sub.className = "aspect-square";
-                sub.style.gap = `${2*wmult}px`;
+                sub.style.gap = `${2 * wmult}px`;
 
                 for (let k = 0; k < n; k++) {
                     for (let l = 0; l < n; l++) {
@@ -93,7 +94,7 @@ import "../styles/global.css";
                             cell.style.display = "none";
                             sub.style.display = "none";
                             board.style.display = "block";
-                        } 
+                        }
                     }
                 }
                 board.appendChild(sub);
@@ -144,5 +145,5 @@ import "../styles/global.css";
     }
     const header = document.getElementById("header");
     if (header)
-        header.innerHTML = n + (" X " + n).repeat(d-1) + " Tic Tac Toe";
+        header.innerHTML = n + (" X " + n).repeat(d - 1) + " Tic Tac Toe";
 </script>

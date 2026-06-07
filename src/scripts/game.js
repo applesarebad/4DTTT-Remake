@@ -109,6 +109,11 @@ export function wincheck(x,y,w,z){
                 get(...prevCoord).style.border = turn === 1 ? `${3 * wmult}px solid purple` : `${2 * wmult}px solid purple`
             }
             document.getElementById("turnmsg").innerHTML = `player ${turn} wins!`
+            confetti({
+				particleCount: 200,
+				spread: 100,
+				origin: { x:0.4, y: 0.6  },
+			});
             return
         }
     }
