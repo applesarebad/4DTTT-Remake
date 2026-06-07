@@ -1,12 +1,14 @@
 ---
 import Layout from "../layouts/base.astro";
 import "../styles/global.css";
+import titleimg from "../assets/Title.png";
 ---
 
 <Layout>
 	<div class="flex justify-center items-center gap-2 p-10 flex-col">
-		<div class="flex items-center justify-center gap-20">
+		<img src={titleimg.src} class="max-h-48 w-auto" />
 
+		<div class="flex items-center justify-center gap-20">
 			<!--hover-->
 			<div class="flex flex-col items-center justify-between">
 				<span class="text-2xl text-purple-900">hover indicator</span>
@@ -38,7 +40,7 @@ import "../styles/global.css";
 			</div>
 			<!--dimension-->
 			<div class="flex flex-col justify-center items-center">
-				<div class="text-2xl text-purple-900 ">dimension</div>
+				<div class="text-2xl text-purple-900">dimension</div>
 				<div id="changed" class="flex gap-2 pt-2">
 					<div class="btn" onclick="changed(2)">2</div>
 					<div class="btn" onclick="changed(3)">3</div>
@@ -148,20 +150,20 @@ import "../styles/global.css";
 	setActive("dim", d);
 	setActive("indicator", on ? "On" : "Off");
 	warningcheck();
-	
+
 	function warningcheck() {
 		el = document.getElementById("warning");
 		if (n == 2)
-			el.innerHTML = 'A size of 2 will lead to an interesting "game"...';
+			el.innerHTML = 'A size of 2 will lead to an interesting "game"';
 		else if (n == 3 && d >= 3)
 			el.innerHTML =
 				"A size of 3 in higher dimensions leads to an easy forced win. Try and find it!";
-		else if (n - d >= 2 && n != 6)
+		else if (n - d >= 2 && d != 4)
 			el.innerHTML =
 				"Note that when the size is much larger than the dimension, the game is easily drawn";
 		else if (n == 6 && d == 4)
 			el.innerHTML =
-				"A 6x6x6x6 game is untested... explore at your own risk";
+				"A 6x6x6x6 game is untested... e xplore at your own risk";
 		else if (n == 3 && d == 2) el.innerHTML = "Is this necessary...";
 		else
 			el.innerHTML =
