@@ -1,16 +1,169 @@
 ---
-import Layout from '../layouts/base.astro';
+import Layout from "../layouts/base.astro";
 import "../styles/global.css";
 ---
 
 <Layout>
-<div>
-	<!--settings-->
-	<div>
-		hovering indicator
-		size (3,4,5,6)
-		dimension (2,3,4)
-	</div>
+	<div class="flex justify-center items-center gap-2 p-10 flex-col">
+		<div class="flex items-center justify-center gap-20">
 
-</div>
+			<!--hover-->
+			<div class="flex flex-col items-center justify-between">
+				<span class="text-2xl text-purple-900">hover indicator</span>
+				<div id="changeIndicator" class="flex gap-4 pt-2">
+					<div
+						class="btn w-full text-center"
+						onclick="changeIndicator(true)"
+					>
+						On
+					</div>
+					<div
+						class="btn w-full text-center"
+						onclick="changeIndicator(false)"
+					>
+						Off
+					</div>
+				</div>
+			</div>
+			<!--size-->
+			<div class="flex flex-col justify-center items-center">
+				<div class="text-2xl text-purple-900">size</div>
+				<div id="changen" class="flex gap-2 pt-2">
+					<div class="btn" onclick="changen(2)">2</div>
+					<div class="btn" onclick="changen(3)">3</div>
+					<div class="btn" onclick="changen(4)">4</div>
+					<div class="btn" onclick="changen(5)">5</div>
+					<div class="btn" onclick="changen(6)">6</div>
+				</div>
+			</div>
+			<!--dimension-->
+			<div class="flex flex-col justify-center items-center">
+				<div class="text-2xl text-purple-900 ">dimension</div>
+				<div id="changed" class="flex gap-2 pt-2">
+					<div class="btn" onclick="changed(2)">2</div>
+					<div class="btn" onclick="changed(3)">3</div>
+					<div class="btn" onclick="changed(4)">4</div>
+				</div>
+			</div>
+		</div>
+		<div id="warning" class="text-xl font-bold text-purple-900 pt-5">
+			4x4x4x4 is recommended for new players. 5x5x5x5 is recommended for
+			longer games.
+		</div>
+		<div class="flex justify-center w-[70%] pt-10">
+			<!--single-->
+			<div class="flex flex-col gap-4 w-1/2 justify-center items-center">
+				<div class="text-2xl font-bold text-purple-900 pb-1">
+					Singleplayer
+				</div>
+				<div class="flex flex-col justify-center w-1/2 gap-5">
+					<button class="btn">easy</button>
+					<button class="btn">medium</button>
+					<button class="btn">hard</button>
+				</div>
+			</div>
+			<!--mult-->
+			<div class="flex flex-col gap-4 w-1/2 justify-center items-center">
+				<div class="text-2xl font-bold text-purple-900 pb-1">
+					Multiplayer
+				</div>
+				<div class="flex flex-col justify-center w-1/2 gap-5">
+					<button class="btn">local</button>
+					<button class="btn">host</button>
+					<button class="btn">join</button>
+				</div>
+			</div>
+		</div>
+	</div>
 </Layout>
+
+<style>
+	@reference "tailwindcss";
+	.btn {
+		@apply bg-purple-300 text-purple-900 text-xl font-bold px-4 py-2 rounded-sm hover:bg-purple-400;
+	}
+	.btn.active {
+		@apply bg-purple-600 text-white;
+	}
+
+	body {
+		background: #ffaaaa;
+		background: linear-gradient(
+			90deg,
+			rgba(255, 170, 170, 1) 0%,
+			rgba(255, 221, 221, 1) 45%,
+			rgba(221, 221, 255, 1) 55%,
+			rgba(170, 170, 255, 1) 100%
+		);
+	}
+</style>
+
+<script is:inline>
+	// @ts-nocheck
+
+	on = localStorage.getItem("indicator") === "true";
+	n = parseInt(localStorage.getItem("n")) || 4;
+	d = parseInt(localStorage.getItem("d")) || 4;
+
+	function setActive(group, value) {
+		let el;
+		switch (group) {
+			case "size":
+				el = document.getElementById("changen");
+				break;
+			case "dim":
+				el = document.getElementById("changed");
+				break;
+			case "indicator":
+				el = document.getElementById("changeIndicator");
+				break;
+		}
+		for (const b of el.children) {
+			b.classList.toggle(
+				"active",
+				b.textContent.trim() === String(value),
+			);
+		}
+	}
+
+	function changeIndicator(x) {
+		localStorage.setItem("indicator", x);
+		on = x;
+		setActive("indicator", x ? "On" : "Off");
+	}
+	function changen(x) {
+		localStorage.setItem("n", x);
+		n = x;
+		setActive("size", x);
+		warningcheck();
+	}
+	function changed(x) {
+		localStorage.setItem("d", x);
+		d = x;
+		setActive("dim", x);
+		warningcheck();
+	}
+
+	setActive("size", n);
+	setActive("dim", d);
+	setActive("indicator", on ? "On" : "Off");
+
+	function warningcheck() {
+		el = document.getElementById("warning");
+		if (n == 2)
+			el.innerHTML = 'A size of 2 will lead to an interesting "game"...';
+		else if (n == 3 && d >= 3)
+			el.innerHTML =
+				"A size of 3 in higher dimensions leads to an easy forced win. Try and find it!";
+		else if (n - d >= 2 && n != 6)
+			el.innerHTML =
+				"Note that when the size is much larger than the dimension, the game is easily drawn";
+		else if (n == 6 && d == 4)
+			el.innerHTML =
+				"A 6x6x6x6 game is untested... explore at your own risk";
+		else if (n == 3 && d == 2) el.innerHTML = "Is this necessary...";
+		else
+			el.innerHTML =
+				"4x4x4x4 is recommended for new players.   5x5x5x5 is recommended for longer games.";
+	}
+</script>
