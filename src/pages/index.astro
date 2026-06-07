@@ -68,7 +68,7 @@ import "../styles/global.css";
 					Multiplayer
 				</div>
 				<div class="flex flex-col justify-center w-1/2 gap-5">
-					<button class="btn">local</button>
+					<a href="/game" class="btn">local</a>
 					<button class="btn">host</button>
 					<button class="btn">join</button>
 				</div>
@@ -80,7 +80,7 @@ import "../styles/global.css";
 <style>
 	@reference "tailwindcss";
 	.btn {
-		@apply bg-purple-300 text-purple-900 text-xl font-bold px-4 py-2 rounded-sm hover:bg-purple-400;
+		@apply bg-purple-300 text-purple-900 text-xl font-bold px-4 py-2 rounded-sm hover:bg-purple-400 block text-center;
 	}
 	.btn.active {
 		@apply bg-purple-600 text-white;
@@ -147,7 +147,8 @@ import "../styles/global.css";
 	setActive("size", n);
 	setActive("dim", d);
 	setActive("indicator", on ? "On" : "Off");
-
+	warningcheck();
+	
 	function warningcheck() {
 		el = document.getElementById("warning");
 		if (n == 2)

@@ -2,19 +2,24 @@
 export { }
 
 let n = 5
+let d = 4
 let turn = 1
 let gameover = false
 let prevCoord = null
 let boxes = []
 let board = null
+let wmult = 1
 
-export function init(size) {
+export function init(size, dim) {
 
     turn = 1
     gameover = false
     prevCoord = null
     boxes = []
     n = size
+    d = dim
+    wmult = (n <= 3 || d <= 2) ? 2 : 1
+
     board = document.getElementById('board')
     boxes = Array.from({ length: n }, () =>
         Array.from({ length: n }, () =>
@@ -36,9 +41,10 @@ export function init(size) {
 }
 
 export function turnsetup(){
-    document.getElementById("turnmsg").innerHTML = turn === 1 ? `X's turn` : `O's turn`
-    animation(document.getElementById("turn"),turn)
-    document.getElementById("all").style.backgroundColor = turn === 1 ? "#ffcccc" : "#ccccff"
+        document.getElementById("turnmsg").innerHTML = turn === 1 ? `X's turn` : `O's turn`
+        animation(document.getElementById("turn"),turn)
+        document.getElementById("all").style.backgroundColor = turn === 1 ? "#ffcccc" : "#ccccff"
+    
 }
 
 export function get(x, y, w, z) {
@@ -81,10 +87,11 @@ export function onClick(x, y, w, z) {
     //swithciugn the border
     if (prevCoord != null) get(...prevCoord).style.outline = "none"
     prevCoord = [x, y, w, z]
-    get(...prevCoord).style.outline = turn === 1 ? "1px solid red" : "1px solid blue"
-    
-    wincheck(x,y,w,z)
+    get(...prevCoord).style.outline = turn === 1 ? `${2 * wmult}px solid red` : `${2 * wmult}px solid blue`
 
+    wincheck(x,y,w,z)
+    
+    if(gameover) return
     turn = turn === 1 ? 2 : 1
     turnsetup()
 }
@@ -97,9 +104,11 @@ export function wincheck(x,y,w,z){
             gameover = true
             for (const point of line) {
                 const el = get(...point)
-                if (el) el.style.outline = turn === 1 ? "2px solid red" : "2px solid blue"
+                if (el) el.style.boxShadow = turn === 1 ? `inset 0 0 0 4000px red` : `inset 0 0 0 4000px blue`
+                get(...prevCoord).style.outline = turn === 1 ? `${2 * wmult}px solid purple` : `${2 * wmult}px solid purple`
+                get(...prevCoord).style.border = turn === 1 ? `${3 * wmult}px solid purple` : `${2 * wmult}px solid purple`
             }
-            console.log(`player ${turn} wins!`)
+            document.getElementById("turnmsg").innerHTML = `player ${turn} wins!`
             return
         }
     }
