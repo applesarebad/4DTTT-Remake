@@ -5,45 +5,45 @@ import Lobby from "../components/lobby.astro";
 ---
 
 <Layout>
-    <Lobby></Lobby>
-    <div id = "game">
-    <div id="all" class="flex justify-center items-center">
-        <div
-            id="titleside"
-            class="flex min-w-[15%] flex-col gap-4 self-stretch items-center p-10"
-        >
-            <a
-                id="back"
-                class="bg-purple-300 text-purple-900 text-xl font-bold px-4 py-2 rounded-sm hover:bg-purple-400"
-                href="/"
-            >
-                back
-            </a>
-        </div>
-        <div
-            id="board"
-            class="min-w-[min(100vh,100vw)] max-w-[min(100vh,100vw)] aspect-square p-2 flex-shrink-0"
-        >
-        </div>
-        <div
-            id="infoside"
-            class="gap-4 items-center flex flex-1 flex-col self-stretch justify-center"
-        >
-            <div id="header" class="text-4xl font-bold">title</div>
-            <div class="h-[10%]"></div>
-            <div class="items-center flex flex-col">
-                <img id="turn" class="max-w-[70%] aspect-square" />
-                <p id="turnmsg" class="text-xl font-bold"></p>
-            </div>
-            <div class="h-[20%]"></div>
+    <Lobby />
+    <div id="game">
+        <div id="all" class="flex justify-center items-center">
             <div
-                id="reset"
-                class="bg-purple-300 text-purple-900 text-xl font-bold px-4 py-2 rounded-sm hover:bg-purple-400"
+                id="titleside"
+                class="flex min-w-[15%] flex-col gap-4 self-stretch items-center p-10"
             >
-                reset
+                <a
+                    id="back"
+                    class="bg-purple-300 text-purple-900 text-xl font-bold px-4 py-2 rounded-sm hover:bg-purple-400"
+                    href="/"
+                >
+                    back
+                </a>
+            </div>
+            <div
+                id="board"
+                class="min-w-[min(100vh,100vw)] max-w-[min(100vh,100vw)] aspect-square p-2 flex-shrink-0"
+            >
+            </div>
+            <div
+                id="infoside"
+                class="gap-4 items-center flex flex-1 flex-col self-stretch justify-center"
+            >
+                <div id="header" class="text-4xl font-bold">title</div>
+                <div class="h-[10%]"></div>
+                <div class="items-center flex flex-col">
+                    <img id="turn" class="max-w-[70%] aspect-square" />
+                    <p id="turnmsg" class="text-xl font-bold"></p>
+                </div>
+                <div class="h-[20%]"></div>
+                <div
+                    id="reset"
+                    class="bg-purple-300 text-purple-900 text-xl font-bold px-4 py-2 rounded-sm hover:bg-purple-400"
+                >
+                    reset
+                </div>
             </div>
         </div>
-    </div>
     </div>
 </Layout>
 
@@ -59,25 +59,30 @@ import Lobby from "../components/lobby.astro";
     src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"
 ></script>
 
-<script is:inline>
+<script>
     // @ts-nocheck
+    import * as game from "../scripts/game.js";
+    let n = parseInt(localStorage.getItem("n")) || 4;
+    let d = parseInt(localStorage.getItem("d")) || 4;
+    let wmult = n <= 3 || d <= 2 ? 2 : 1;
+
     const role = new URLSearchParams(window.location.search).get("role");
+
+    // lobby show/hide
     document.getElementById("hostview").style.display =
         role === "host" ? "flex" : "none";
     document.getElementById("joinview").style.display =
         role === "join" ? "flex" : "none";
-
-
     if (role === "host" || role === "join") {
-    document.getElementById("game").style.display = "none";
-}
+        document.getElementById("game").style.display = "none";
+    } else {
+        showGame();
+    }
 
     const peerConfig = {
         config: {
             iceServers: [
-                {
-                    urls: "stun:stun.relay.metered.ca:80",
-                },
+                { urls: "stun:stun.relay.metered.ca:80" },
                 {
                     urls: "turn:global.relay.metered.ca:80",
                     username: "e67d7df8c6881e2c941f6efa",
@@ -102,104 +107,78 @@ import Lobby from "../components/lobby.astro";
         },
     };
 
-    let peer, code;
+    let peer, conn, code;
+
+    function showGame() {
+        document.getElementById("game").style.display = "block";
+        document.getElementById("lobby").style.display = "none";
+        start();
+    }
 
     if (role === "host") {
         code = Math.random().toString(36).slice(2, 7).toUpperCase();
         document.getElementById("code").innerHTML = code;
-        peer = new Peer(code);
+        peer = new Peer(code, peerConfig);
         peer.on("error", (err) => console.log("peer error:", err.type, err));
-        peer.on("connection", (conn) => {
-            window.conn = conn
-            document.getElementById("game").style.display = "block";
-            document.getElementById("lobby").style.display = "none";
+        peer.on("connection", (c) => {
+            conn = c;
+            conn.send({ type: "init", n, d });
+            conn.on("open", () => {
+                console.log("host conn open, sending init");
+                conn.send({ type: "init", n, d });
+                showGame();
+            });
+            conn.on("data", (data) =>
+                game.onClick(data.x, data.y, data.w, data.z),
+            );
         });
-        
     }
 
-    function copyCode() {
-        navigator.clipboard.writeText(code);
-    }
+    window.copyCode = () => navigator.clipboard.writeText(code);
 
-    function joinGame() {
+    window.joinGame = () => {
         const input = document.getElementById("codeinput").value.toUpperCase();
         if (input.length < 5) return;
-        document.getElementById("jbtn").style.visibility = "hidden"
+        document.getElementById("jbtn").style.visibility = "hidden";
         document.getElementById("joinstatus").style.visibility = "visible";
         document.getElementById("joinstatus").textContent = "searching...";
-        peer = new Peer();
+
+        peer = new Peer(peerConfig);
         peer.on("open", () => {
-            const conn = peer.connect(input);
-            
+            conn = peer.connect(input);
             const timeout = setTimeout(() => {
-                document.getElementById("joinstatus").innerHTML = "connection failed. check your code";
+                document.getElementById("joinstatus").innerHTML =
+                    "connection failed. check your code";
                 peer.destroy();
                 peer = null;
-                document.getElementById("jbtn").style.visibility = "visible"
+                document.getElementById("jbtn").style.visibility = "visible";
             }, 4000);
 
+            conn.on("data", (data) => {
+                    console.log("dsoijhhjsdo")
+                    if (data.type === "init") {
+                        n = data.n;
+                        d = data.d;
+                        wmult = n <= 3 || d <= 2 ? 2 : 1;
+                        showGame();
+                    } else {
+                        game.onClick(data.x, data.y, data.w, data.z);
+                    }
+                });
+
             conn.on("open", () => {
+                console.log("guest conn open");
                 clearTimeout(timeout);
-                window.conn = conn
-                document.getElementById("game").style.display = "block";
-                document.getElementById("lobby").style.display = "none";
-                
             });
         });
-    }
-</script>
+    };
 
+    // game
 
-
-<script>
-    // @ts-nocheck
-    import * as game from "../scripts/game.js";
-
-    let params = new URLSearchParams(window.location.search);
-    let role = params.get("role");
-    let peerId = params.get("peer");
-
-    let conn;
-
-    let peer = new Peer(role === "host" ? peerId : undefined);
-    let online = role !== null;
-
-    if (online) {
-        peer.on("open", () => {
-            if (role === "join") {
-                conn = peer.connect(peerId);
-                conn.on("open", () => {});
-                conn.on("data", (data) => {
-                    game.onClick(data.x, data.y, data.w, data.z);
-                });
-                peer.on("open", (id) => console.log("open", id));
-            }
-
-        });
-
-        if (role === "host") {
-            peer.on("connection", (c) => {
-                console.log("eojihrfjk")
-                conn = c;
-                conn.on("data", (data) => {
-                    game.onClick(data.x, data.y, data.w, data.z);
-                });
-            });
-            peer.on("open", (id) => console.log("open", id));
-        }
-    }
-
-    let n = parseInt(localStorage.getItem("n")) || 4;
-    let d = parseInt(localStorage.getItem("d")) || 4;
-    let wmult = n <= 3 || d <= 2 ? 2 : 1;
-    start();
     function start() {
         let board = document.getElementById("board");
-        if (board == null) {
-            board = document.createElement("div");
-        }
+        if (board == null) board = document.createElement("div");
         board.replaceChildren();
-
         board.style.display = "grid";
         board.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
         board.style.gap = "10px";
@@ -233,51 +212,40 @@ import Lobby from "../components/lobby.astro";
             }
         }
 
-        board.addEventListener("click", function (event) {
-            if (event.target instanceof HTMLElement) {
-                if (event.target.classList.contains("cell")) {
-                    const cell = event.target;
-                    const pos = event.target.dataset.pos;
-
-                    if (pos) {
-                        const [x, y, w, z] = pos.split(",").map(Number);
-                        console.log(x, y, w, z);
-                        if (conn) conn.send({ x, y, w, z });
-                        game.onClick(x, y, w, z);
-                    }
+        board.addEventListener("click", (event) => {
+            if (
+                event.target instanceof HTMLElement &&
+                event.target.classList.contains("cell")
+            ) {
+                const pos = event.target.dataset.pos;
+                if (pos) {
+                    const [x, y, w, z] = pos.split(",").map(Number);
+                    if (conn) conn.send({ x, y, w, z });
+                    game.onClick(x, y, w, z);
                 }
             }
         });
 
-        board.addEventListener("mouseover", function (event) {
-            if (event.target instanceof HTMLElement) {
-                if (event.target.classList.contains("cell")) {
-                    const cell = event.target;
-                    const pos = event.target.dataset.pos;
-
-                    if (pos) {
-                        
-                        const [x, y, w, z] = pos.split(",").map(Number);
-                        
-                        game.onHover(x, y, w, z);
-                    }
+        board.addEventListener("mouseover", (event) => {
+            if (
+                event.target instanceof HTMLElement &&
+                event.target.classList.contains("cell")
+            ) {
+                const pos = event.target.dataset.pos;
+                if (pos) {
+                    const [x, y, w, z] = pos.split(",").map(Number);
+                    game.onHover(x, y, w, z);
                 }
             }
         });
 
-        board.addEventListener("mouseleave", function (event) {
-            game.onUnhover();
-        });
+        board.addEventListener("mouseleave", () => game.onUnhover());
         game.init(n, d);
     }
 
     const reset = document.getElementById("reset");
-    if (reset) {
-        reset.addEventListener("click", function () {
-            console.log(123);
-            start();
-        });
-    }
+    if (reset) reset.addEventListener("click", () => start());
+
     const header = document.getElementById("header");
     if (header)
         header.innerHTML = n + (" X " + n).repeat(d - 1) + " Tic Tac Toe";
