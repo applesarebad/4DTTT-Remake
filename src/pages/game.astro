@@ -30,12 +30,18 @@ import Lobby from "../components/lobby.astro";
                 class="gap-4 items-center flex flex-1 flex-col self-stretch justify-center"
             >
                 <div id="header" class="text-4xl font-bold">title</div>
-                <div class="h-[10%]"></div>
+                <div class="h-[5%]"></div>
                 <div class="items-center flex flex-col">
                     <img id="turn" class="max-w-[70%] aspect-square" />
                     <p id="turnmsg" class="text-xl font-bold"></p>
                 </div>
-                <div class="h-[20%]"></div>
+                <div class="h-[10%]"></div>
+
+                <div class="flex items-center justify-center">
+                    <p id="yourturnmsg" class="text-xl font-bold"></p>
+                    <img id="yourturnimg" class="aspect-square max-w-[30%]" />
+                </div>
+                <div class="h-[10%]"></div>
                 <div
                     id="reset"
                     class="bg-purple-300 text-purple-900 text-xl font-bold px-4 py-2 rounded-sm hover:bg-purple-400"
@@ -67,7 +73,8 @@ import Lobby from "../components/lobby.astro";
     let wmult = n <= 3 || d <= 2 ? 2 : 1;
 
     const role = new URLSearchParams(window.location.search).get("role");
-
+    let online;
+    let yourturn;
     // lobby show/hide
     document.getElementById("hostview").style.display =
         role === "host" ? "flex" : "none";
@@ -75,6 +82,9 @@ import Lobby from "../components/lobby.astro";
         role === "join" ? "flex" : "none";
     if (role === "host" || role === "join") {
         document.getElementById("game").style.display = "none";
+        document.getElementById("yourturnmsg").innerHTML = "You are";
+        online = true;
+        document.getElementById("reset").style.visibility = "hidden";
     } else {
         showGame();
     }
@@ -118,6 +128,8 @@ import Lobby from "../components/lobby.astro";
     if (role === "host") {
         code = Math.random().toString(36).slice(2, 7).toUpperCase();
         document.getElementById("code").innerHTML = code;
+        document.getElementById("yourturnimg").src = "/X/6.png";
+        yourturn = 1;
         peer = new Peer(code, peerConfig);
         peer.on("error", (err) => console.log("peer error:", err.type, err));
         peer.on("connection", (c) => {
@@ -128,16 +140,32 @@ import Lobby from "../components/lobby.astro";
                 conn.send({ type: "init", n, d });
                 showGame();
             });
-            conn.on("data", (data) =>
-                game.onClick(data.x, data.y, data.w, data.z),
-            );
+            conn.on("data", (data) => {
+                if (data.type == "move") {
+                    game.onClick(data.x, data.y, data.w, data.z, data.who);
+                } else if (data.type == "reset") {
+                    restart(false);
+                }
+            });
+            conn.on("close", () => {
+                dc()
+            });
         });
     }
 
+    function dc() {
+        const overlay = document.createElement("div");
+        overlay.className =
+            "fixed inset-0 flex justify-center items-center bg-purple-100/80";
+        overlay.innerHTML = `<div class="text-5xl font-bold text-purple-900">opponent disconnected</div>`;
+        document.body.appendChild(overlay);
+        setTimeout(() => (window.location.href = "/"), 1000);
+    }
     window.copyCode = () => navigator.clipboard.writeText(code);
 
     window.joinGame = () => {
         const input = document.getElementById("codeinput").value.toUpperCase();
+        document.getElementById("yourturnimg").src = "/O/6.png";
         if (input.length < 5) return;
         document.getElementById("jbtn").style.visibility = "hidden";
         document.getElementById("joinstatus").style.visibility = "visible";
@@ -145,6 +173,7 @@ import Lobby from "../components/lobby.astro";
 
         peer = new Peer(peerConfig);
         peer.on("open", () => {
+            yourturn = 2;
             conn = peer.connect(input);
             const timeout = setTimeout(() => {
                 document.getElementById("joinstatus").innerHTML =
@@ -155,20 +184,25 @@ import Lobby from "../components/lobby.astro";
             }, 4000);
 
             conn.on("data", (data) => {
-                    console.log("dsoijhhjsdo")
-                    if (data.type === "init") {
-                        n = data.n;
-                        d = data.d;
-                        wmult = n <= 3 || d <= 2 ? 2 : 1;
-                        showGame();
-                    } else {
-                        game.onClick(data.x, data.y, data.w, data.z);
-                    }
-                });
+                console.log("dsoijhhjsdo");
+                if (data.type === "init") {
+                    n = data.n;
+                    d = data.d;
+                    wmult = n <= 3 || d <= 2 ? 2 : 1;
+                    showGame();
+                } else if (data.type == "move") {
+                    game.onClick(data.x, data.y, data.w, data.z, data.who);
+                } else if (data.type == "reset") {
+                    restart(false);
+                }
+            });
 
             conn.on("open", () => {
-                console.log("guest conn open");
                 clearTimeout(timeout);
+            });
+
+            conn.on("close", () => {
+                dc()
             });
         });
     };
@@ -220,8 +254,8 @@ import Lobby from "../components/lobby.astro";
                 const pos = event.target.dataset.pos;
                 if (pos) {
                     const [x, y, w, z] = pos.split(",").map(Number);
-                    if (conn) conn.send({ x, y, w, z });
-                    game.onClick(x, y, w, z);
+                    //if (conn) conn.send({ x, y, w, z });
+                    game.onClick(x, y, w, z, true);
                 }
             }
         });
@@ -241,10 +275,24 @@ import Lobby from "../components/lobby.astro";
 
         board.addEventListener("mouseleave", () => game.onUnhover());
         game.init(n, d);
+        if (online) game.onlineinit(yourturn, (data) => conn?.send(data));
     }
 
     const reset = document.getElementById("reset");
-    if (reset) reset.addEventListener("click", () => start());
+    function restart(you = true) {
+        if (online) {
+            yourturn = 3 - yourturn;
+            document.getElementById("yourturnimg").src =
+                yourturn == 1 ? "/X/6.png" : "/O/6.png";
+            if (you) conn.send({ type: "reset" });
+        }
+
+        start();
+    }
+    if (reset)
+        reset.addEventListener("click", () => {
+            restart();
+        });
 
     const header = document.getElementById("header");
     if (header)

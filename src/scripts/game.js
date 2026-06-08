@@ -9,7 +9,9 @@ let prevCoord = null
 let boxes = []
 let board = null
 let wmult = 1
-
+let online = false
+let send
+let yourturn = 0
 export function init(size, dim) {
 
     turn = 1
@@ -38,6 +40,12 @@ export function init(size, dim) {
         boxes[x][y][w][z].el = el
     })
     turnsetup()
+}
+
+export function onlineinit(turning, sending){
+    online = true
+    yourturn = turning
+    send = sending
 }
 
 export function turnsetup(){
@@ -73,10 +81,13 @@ export function allboxes(){
     return all
 }
 
-export function onClick(x, y, w, z) {
+export function onClick(x, y, w, z, you) {
     //ignore when its not good inptu
     if (gameover) return
     if (getState(x, y, w, z) !== null) return
+    if (online && yourturn != turn && you) return 
+
+    if (online) send({ type: "move", x, y, w, z, myMove: false });
 
     //actual change 
     setState(x, y, w, z, turn)
@@ -109,6 +120,7 @@ export function wincheck(x,y,w,z){
                 get(...prevCoord).style.border = turn === 1 ? `${3 * wmult}px solid purple` : `${2 * wmult}px solid purple`
             }
             document.getElementById("turnmsg").innerHTML = `player ${turn} wins!`
+            document.getElementById("reset").style.visibility = "visible"
             confetti({
 				particleCount: 200,
 				spread: 100,
