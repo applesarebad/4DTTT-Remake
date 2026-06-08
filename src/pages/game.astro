@@ -1,9 +1,12 @@
 ---
 import Layout from "../layouts/base.astro";
 import "../styles/global.css";
+import Lobby from "../components/lobby.astro";
 ---
 
 <Layout>
+    <Lobby></Lobby>
+    <div id = "game">
     <div id="all" class="flex justify-center items-center">
         <div
             id="titleside"
@@ -41,6 +44,7 @@ import "../styles/global.css";
             </div>
         </div>
     </div>
+    </div>
 </Layout>
 
 <style>
@@ -54,9 +58,137 @@ import "../styles/global.css";
 <script
     src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"
 ></script>
+
+<script is:inline>
+    // @ts-nocheck
+    const role = new URLSearchParams(window.location.search).get("role");
+    document.getElementById("hostview").style.display =
+        role === "host" ? "flex" : "none";
+    document.getElementById("joinview").style.display =
+        role === "join" ? "flex" : "none";
+
+
+    if (role === "host" || role === "join") {
+    document.getElementById("game").style.display = "none";
+}
+
+    const peerConfig = {
+        config: {
+            iceServers: [
+                {
+                    urls: "stun:stun.relay.metered.ca:80",
+                },
+                {
+                    urls: "turn:global.relay.metered.ca:80",
+                    username: "e67d7df8c6881e2c941f6efa",
+                    credential: "o8x78SfNmzKDX9ux",
+                },
+                {
+                    urls: "turn:global.relay.metered.ca:80?transport=tcp",
+                    username: "e67d7df8c6881e2c941f6efa",
+                    credential: "o8x78SfNmzKDX9ux",
+                },
+                {
+                    urls: "turn:global.relay.metered.ca:443",
+                    username: "e67d7df8c6881e2c941f6efa",
+                    credential: "o8x78SfNmzKDX9ux",
+                },
+                {
+                    urls: "turns:global.relay.metered.ca:443?transport=tcp",
+                    username: "e67d7df8c6881e2c941f6efa",
+                    credential: "o8x78SfNmzKDX9ux",
+                },
+            ],
+        },
+    };
+
+    let peer, code;
+
+    if (role === "host") {
+        code = Math.random().toString(36).slice(2, 7).toUpperCase();
+        document.getElementById("code").innerHTML = code;
+        peer = new Peer(code);
+        peer.on("error", (err) => console.log("peer error:", err.type, err));
+        peer.on("connection", (conn) => {
+            window.conn = conn
+            document.getElementById("game").style.display = "block";
+            document.getElementById("lobby").style.display = "none";
+        });
+        
+    }
+
+    function copyCode() {
+        navigator.clipboard.writeText(code);
+    }
+
+    function joinGame() {
+        const input = document.getElementById("codeinput").value.toUpperCase();
+        if (input.length < 5) return;
+        document.getElementById("jbtn").style.visibility = "hidden"
+        document.getElementById("joinstatus").style.visibility = "visible";
+        document.getElementById("joinstatus").textContent = "searching...";
+        peer = new Peer();
+        peer.on("open", () => {
+            const conn = peer.connect(input);
+            
+            const timeout = setTimeout(() => {
+                document.getElementById("joinstatus").innerHTML = "connection failed. check your code";
+                peer.destroy();
+                peer = null;
+                document.getElementById("jbtn").style.visibility = "visible"
+            }, 4000);
+
+            conn.on("open", () => {
+                clearTimeout(timeout);
+                window.conn = conn
+                document.getElementById("game").style.display = "block";
+                document.getElementById("lobby").style.display = "none";
+                
+            });
+        });
+    }
+</script>
+
+
+
 <script>
     // @ts-nocheck
     import * as game from "../scripts/game.js";
+
+    let params = new URLSearchParams(window.location.search);
+    let role = params.get("role");
+    let peerId = params.get("peer");
+
+    let conn;
+
+    let peer = new Peer(role === "host" ? peerId : undefined);
+    let online = role !== null;
+
+    if (online) {
+        peer.on("open", () => {
+            if (role === "join") {
+                conn = peer.connect(peerId);
+                conn.on("open", () => {});
+                conn.on("data", (data) => {
+                    game.onClick(data.x, data.y, data.w, data.z);
+                });
+                peer.on("open", (id) => console.log("open", id));
+            }
+
+        });
+
+        if (role === "host") {
+            peer.on("connection", (c) => {
+                console.log("eojihrfjk")
+                conn = c;
+                conn.on("data", (data) => {
+                    game.onClick(data.x, data.y, data.w, data.z);
+                });
+            });
+            peer.on("open", (id) => console.log("open", id));
+        }
+    }
+
     let n = parseInt(localStorage.getItem("n")) || 4;
     let d = parseInt(localStorage.getItem("d")) || 4;
     let wmult = n <= 3 || d <= 2 ? 2 : 1;
@@ -110,6 +242,7 @@ import "../styles/global.css";
                     if (pos) {
                         const [x, y, w, z] = pos.split(",").map(Number);
                         console.log(x, y, w, z);
+                        if (conn) conn.send({ x, y, w, z });
                         game.onClick(x, y, w, z);
                     }
                 }
@@ -123,7 +256,9 @@ import "../styles/global.css";
                     const pos = event.target.dataset.pos;
 
                     if (pos) {
+                        
                         const [x, y, w, z] = pos.split(",").map(Number);
+                        
                         game.onHover(x, y, w, z);
                     }
                 }

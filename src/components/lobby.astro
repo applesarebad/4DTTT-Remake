@@ -1,0 +1,63 @@
+---
+import Layout from "../layouts/base.astro";
+import "../styles/global.css";
+---
+
+<Layout>
+    <div id = "lobby">
+    <div class="fixed top-10 left-29">
+        <a id="back" class="btn none" href="/">back</a>
+    </div>
+
+    <div
+        class="flex justify-center items-center gap-6 p-10 flex-col min-h-screen"
+    >
+        <div id="hostview" class="flex flex-col items-center gap-4">
+            <div class="text-5xl text-purple-900">
+                send this to your friend!
+            </div>
+
+            <div
+                id="code"
+                class="text-9xl font-bold text-purple-900 pt-20 pb-10"
+            >
+            </div>
+            <button class="btn" onclick="copyCode()">copy</button>
+        </div>
+
+        <div id="joinview" class="flex flex-col items-center gap-4">
+            <div class="text-5xl text-purple-900 pb-10">enter code</div>
+            <input
+                id="codeinput"
+                type="text"
+                maxlength="5"
+                class="text-6xl font-bold tracking-widest text-center text-purple-900 bg-purple-100 px-6 py-4 rounded-sm uppercase border-2 border-purple-300 outline-none focus:border-purple-500"
+                placeholder="-----"
+                autocomplete="off"
+            />
+            <button id = "jbtn" class="btn" onclick="joinGame()">join</button>
+            <div id="joinstatus" class="text-xl text-purple-900 invisible">empty</div>
+        </div>
+    </div>
+    </div>
+</Layout>
+
+<style>
+    @import url("https://fonts.googleapis.com/css2?family=Schoolbell&display=swap");
+    * {
+        font-family: "Schoolbell", cursive;
+    }
+    @reference "tailwindcss";
+    .btn {
+        @apply bg-purple-300 text-purple-900 text-xl font-bold px-4 py-2 rounded-sm hover:bg-purple-400 block text-center;
+    }
+    body {
+        background: linear-gradient(
+            90deg,
+            rgba(255, 170, 170, 1) 0%,
+            rgba(255, 221, 221, 1) 45%,
+            rgba(221, 221, 255, 1) 55%,
+            rgba(170, 170, 255, 1) 100%
+        );
+    }
+</style>
