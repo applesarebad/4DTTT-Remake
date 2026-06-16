@@ -68,6 +68,7 @@ import Lobby from "../components/lobby.astro";
 <script>
     // @ts-nocheck
     import * as game from "../scripts/game.js";
+    import * as ai from "../scripts/single.js";
     let n = parseInt(localStorage.getItem("n")) || 4;
     let d = parseInt(localStorage.getItem("d")) || 4;
     let wmult = n <= 3 || d <= 2 ? 2 : 1;
@@ -257,6 +258,7 @@ import Lobby from "../components/lobby.astro";
                     //if (conn) conn.send({ x, y, w, z });
                     game.onClick(x, y, w, z, true);
                 }
+                console.log(ai.getTop(game.turn, 1))
             }
         });
 
@@ -276,6 +278,7 @@ import Lobby from "../components/lobby.astro";
         board.addEventListener("mouseleave", () => game.onUnhover());
         game.init(n, d);
         if (online) game.onlineinit(yourturn, (data) => conn?.send(data));
+        ai.singleInit()
     }
 
     const reset = document.getElementById("reset");

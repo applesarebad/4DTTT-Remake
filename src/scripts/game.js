@@ -1,4 +1,3 @@
-
 export { }
 
 let n = 5
@@ -12,6 +11,8 @@ let wmult = 1
 let online = false
 let send
 let yourturn = 0
+
+export { boxes, n, d }
 export function init(size, dim) {
 
     turn = 1
@@ -188,7 +189,7 @@ export function reset() {
     })
 }
 
-function checkPossibleLines(coord) {
+export function checkPossibleLines(coord) {
     const lines = []
     for (let i = -1; i <= 1; i++)
         for (let j = -1; j <= 1; j++)
