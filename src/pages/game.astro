@@ -68,14 +68,15 @@ import Lobby from "../components/lobby.astro";
 <script>
     // @ts-nocheck
     import * as game from "../scripts/game.js";
-    import * as ai from "../scripts/single.js";
+    import * as single from "../scripts/single.js";
     let n = parseInt(localStorage.getItem("n")) || 4;
     let d = parseInt(localStorage.getItem("d")) || 4;
+    let cpu = parseInt(localStorage.getItem("cpu")) || 1;
     let wmult = n <= 3 || d <= 2 ? 2 : 1;
 
     const role = new URLSearchParams(window.location.search).get("role");
     let online;
-    let yourturn;
+    let yourturn = 1;
     // lobby show/hide
     document.getElementById("hostview").style.display =
         role === "host" ? "flex" : "none";
@@ -211,9 +212,14 @@ import Lobby from "../components/lobby.astro";
     // game
 
     function start() {
+
         let board = document.getElementById("board");
+        let boardcopy = board.cloneNode(true);
+        board.replaceWith(boardcopy)
+        board = boardcopy
         if (board == null) board = document.createElement("div");
         board.replaceChildren();
+        
         board.style.display = "grid";
         board.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
         board.style.gap = "10px";
@@ -254,11 +260,11 @@ import Lobby from "../components/lobby.astro";
             ) {
                 const pos = event.target.dataset.pos;
                 if (pos) {
-                    const [x, y, w, z] = pos.split(",").map(Number);
+                    let [x, y, w, z] = pos.split(",").map(Number);
                     //if (conn) conn.send({ x, y, w, z });
                     game.onClick(x, y, w, z, true);
                 }
-                console.log(ai.getTop(game.turn, 1))
+                
             }
         });
 
@@ -276,15 +282,22 @@ import Lobby from "../components/lobby.astro";
         });
 
         board.addEventListener("mouseleave", () => game.onUnhover());
-        game.init(n, d);
+        game.init(n, d, cpu);
         if (online) game.onlineinit(yourturn, (data) => conn?.send(data));
-        ai.singleInit()
+        single.singleInit(cpu)
+
+        if (cpu>0){
+            if (yourturn == 2){
+                let [x2, y2, w2, z2] = single.getTop(1, 20000)[0]
+                game.onClick(x2, y2, w2, z2, false)
+            }
+        }
     }
 
     const reset = document.getElementById("reset");
     function restart(you = true) {
+        yourturn = 3 - yourturn;
         if (online) {
-            yourturn = 3 - yourturn;
             document.getElementById("yourturnimg").src =
                 yourturn == 1 ? "/X/6.png" : "/O/6.png";
             if (you) conn.send({ type: "reset" });

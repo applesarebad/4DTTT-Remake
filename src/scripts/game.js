@@ -1,4 +1,4 @@
-export { }
+import * as single from "./single.js"
 
 let n = 5
 let d = 4
@@ -11,9 +11,10 @@ let wmult = 1
 let online = false
 let send
 let yourturn = 0
+let cpu
 
 export { boxes, n, d }
-export function init(size, dim) {
+export function init(size, dim, computer) {
 
     turn = 1
     gameover = false
@@ -21,6 +22,7 @@ export function init(size, dim) {
     boxes = []
     n = size
     d = dim
+    cpu = computer
     wmult = (n <= 3 || d <= 2) ? 2 : 1
 
     board = document.getElementById('board')
@@ -104,8 +106,13 @@ export function onClick(x, y, w, z, you) {
     wincheck(x,y,w,z)
     
     if(gameover) return
-    turn = turn === 1 ? 2 : 1
+    turn = 3-turn
     turnsetup()
+
+    if(cpu>0 && you){
+        let [x2, y2, w2, z2] = single.getTop(turn, 1)[0]
+        onClick(x2, y2, w2, z2, false)
+    }
 }
 
 export function wincheck(x,y,w,z){

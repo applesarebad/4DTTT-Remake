@@ -2,6 +2,7 @@ import * as game from "./game.js"
 import {boxes, n, d} from "./game.js"
 
 let allLines = []
+let cpu
 
 
 export function getAllLines(){
@@ -21,11 +22,12 @@ export function getAllLines(){
 }
 
 
-export function singleInit(){
+export function singleInit(computer){
+    cpu = computer
     getAllLines()
 }
 export function computerMove() {
-
+    
 }
 
 export function getBest() {
@@ -36,7 +38,9 @@ export function scoreBoard(turn) {
     let moveScores = {}
     for (let box of game.allboxes()) {
         if (box.state === null) {
-            moveScores[box.el.dataset.pos] = 0
+            const [x, y, w, z] = box.el.dataset.pos.split(',').map(Number)
+            const key = `${x},${y},${w},${z}` 
+            moveScores[key] = 0
         }
     }
 
@@ -54,7 +58,7 @@ export function scoreBoard(turn) {
         if(theirs.length == 0){
             for(let e of empty){
                 let key = e.join(',')
-                moveScores[key] += mine.length**2
+                moveScores[key] += mine.length**2 + 1 
                 if(mine.length == n-1){
                     moveScores[key] += 1000000
                 }
@@ -75,11 +79,16 @@ export function scoreBoard(turn) {
 
 }
 export function getTop(turn, x) {
-    const scores = scoreBoard(turn)
-    return Object.entries(scores)
-        .sort((a, b) => b[1] - a[1])
+    let entries = Object.entries(scoreBoard(turn))
+    for (let i = entries.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1))
+        ;[entries[i], entries[j]] = [entries[j], entries[i]]
+    }
+    console.log(entries.sort((a, b) => (b[1] || -1) - (a[1] || -1)).slice(0, x))
+    return entries
+        .sort((a, b) => (b[1] || -1) - (a[1] || -1))
         .slice(0, x)
-        .map(([key]) => key.split(',').map(Number))
+        .map(([key]) => key.split(',').map(Number)) 
 }
 
 function sim(x, y, w, z, turn) {
