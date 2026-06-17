@@ -286,7 +286,7 @@ import Lobby from "../components/lobby.astro";
         if (online) game.onlineinit(yourturn, (data) => conn?.send(data));
         single.singleInit(cpu)
 
-        if (cpu>0){
+        if (cpu>0 && !online){
             if (yourturn == 2){
                 let [x2, y2, w2, z2] = single.getTop(1, 20000)[0]
                 game.onClick(x2, y2, w2, z2, false)
