@@ -33,9 +33,7 @@ export function computerMove(turn) {
 
     let bestEval = -Infinity
     let bestMove = moves[0]
-    console.log(obviousScore(turn))
     if (obviousScore(turn) >= 100000){
-        console.log(bestMove)
         return bestMove
     }
 
@@ -144,6 +142,7 @@ export function moveFinder(turn) {
     let moveScores = {}
     for (let box of game.allboxes()) {
         if (box.state === null) {
+            if (box.el?.style.display === 'none') continue;
             const [x, y, w, z] = box.el.dataset.pos.split(',').map(Number)
             const key = `${x},${y},${w},${z}` 
             moveScores[key] = 0

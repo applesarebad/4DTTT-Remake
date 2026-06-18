@@ -12,10 +12,11 @@ let online = false
 let send
 let yourturn = 0
 let cpu
+let totalturns = 0
 
 export { boxes, n, d }
 export function init(size, dim, computer) {
-
+    totalturns = 0
     turn = 1
     gameover = false
     prevCoord = null
@@ -104,7 +105,7 @@ export function onClick(x, y, w, z, you) {
     get(...prevCoord).style.outline = turn === 1 ? `${2 * wmult}px solid red` : `${2 * wmult}px solid blue`
 
     wincheck(x,y,w,z)
-    
+    console.log(x,y,z,w)
     if(gameover) return
     turn = 3-turn
     turnsetup()
@@ -116,6 +117,18 @@ export function onClick(x, y, w, z, you) {
 }
 
 export function wincheck(x,y,w,z){
+    totalturns += 1
+    if( totalturns >= n ** d){
+        gameover = true
+        document.getElementById("turnmsg").innerHTML = `Tie!`
+        document.getElementById("reset").style.visibility = "visible"
+        confetti({
+				particleCount: 20,
+				spread: 100,
+				origin: { x:0.4, y: 0.6  },
+			});
+            return
+    }
      const lines = checkPossibleLines([x, y, w, z])
     for (const line of lines) {
         const states = line.map(p => getState(...p))
@@ -127,7 +140,7 @@ export function wincheck(x,y,w,z){
                 get(...prevCoord).style.outline = turn === 1 ? `${2 * wmult}px solid purple` : `${2 * wmult}px solid purple`
                 get(...prevCoord).style.border = turn === 1 ? `${3 * wmult}px solid purple` : `${2 * wmult}px solid purple`
             }
-            document.getElementById("turnmsg").innerHTML = `player ${turn} wins!`
+            document.getElementById("turnmsg").innerHTML = turn == 1 ? `Player X wins!` : 'Player O wins!'
             document.getElementById("reset").style.visibility = "visible"
             confetti({
 				particleCount: 200,
@@ -163,7 +176,6 @@ export function animation(el, n){
 }
 export function onHover(x, y, w, z) {
     onUnhover()
-    console.log(turn)
     const lines = checkPossibleLines([x, y, w, z])
     const COLOURS = ['#ff8888', '#8888ff']
     let colour = turn === 1
