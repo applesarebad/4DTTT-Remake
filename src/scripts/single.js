@@ -26,14 +26,120 @@ export function singleInit(computer){
     cpu = computer
     getAllLines()
 }
-export function computerMove() {
+export function computerMove(turn) {
+    let moves = getTop(turn, 20); 
+    if (moves.length == 0) return null;
+    let depth = 3
+
+    let bestEval = -Infinity
+    let bestMove = moves[0]
+    console.log(obviousScore(turn))
+    if (obviousScore(turn) >= 100000){
+        console.log(bestMove)
+        return bestMove
+    }
+
     
+    for(let move of moves){
+        sim(...move, turn)
+        let moveEval = minimax(depth-1, -Infinity, Infinity, false, turn)
+        unsim(...move)
+        if (moveEval > bestEval){
+            bestEval = moveEval
+            bestMove = move
+        }
+    }
+    return bestMove
 }
 
-export function getBest() {
+export function minimax(depth, a, b, memaxing, myturn){
 
+    let currentScore = boardEval(myturn)
+    if (currentScore >= 100000000 || currentScore <= -100000000) {
+        return currentScore
+    }
+
+    if(depth == 0) return currentScore
+
+    let currturn = memaxing ? myturn : 3-myturn
+    let moves = getTop(currturn, 20)
+    //all moves done
+    if(moves.length == 0) return 0
+
+
+    if(memaxing){
+        let maxEval = -Infinity
+        for(let move of moves){
+            sim(...move, currturn)
+            let moveEval = minimax(depth-1, a,b, !memaxing, myturn)
+            unsim(...move)
+            maxEval = Math.max(maxEval, moveEval)
+            
+            
+            a = Math.max(a, maxEval)
+            if(b <= a) break;
+            
+        }
+        return maxEval
+    }
+    else{
+        //themmining
+        let minEval = Infinity
+        for(let move of moves){
+            sim(...move, currturn)
+            let moveEval = minimax(depth-1, a,b, !memaxing, myturn)
+            unsim(...move)
+            minEval = Math.min(minEval, moveEval)
+
+            
+            b = Math.min(b, minEval)
+            if(b <= a) break;
+            
+        }
+        return minEval
+    }
 }
-export function scoreBoard(turn) {
+
+export function boardEval(turn){
+    let opp = 3 - turn
+    let score = 0
+    let mefork = 0
+    let themfork = 0
+    
+
+    for(let line of allLines){
+        let mine = 0
+        let theirs = 0
+        let empty = 0
+        for(let i of line){
+            switch(game.getState(...i)){
+                case null: empty+=1; break
+                case turn: mine+=1; break
+                case opp: theirs+=1; break
+            }
+        }
+
+        if(mine == n) return 100000000
+        if(theirs == n) return -100000000
+        
+        if(theirs == 0){
+            score += mine**2
+            if(mine == n-1){
+                mefork += 1
+            }
+        }
+        else if(mine == 0){
+            score -= theirs**2
+            if(theirs == n-1){
+                themfork+=1 
+            }
+        }
+    }
+    if (mefork >= 2) score += 200000
+    if (themfork >=2) score -= 100000
+    return score
+}
+export function moveFinder(turn) {
     let opp = 3 - turn
     let moveScores = {}
     for (let box of game.allboxes()) {
@@ -60,7 +166,7 @@ export function scoreBoard(turn) {
                 let key = e.join(',')
                 moveScores[key] += mine.length**2 + 1 
                 if(mine.length == n-1){
-                    moveScores[key] += 1000000
+                    moveScores[key] += 1000000000
                 }
             }
         }
@@ -69,7 +175,7 @@ export function scoreBoard(turn) {
                 let key = e.join(',')
                 moveScores[key] += theirs.length**2
                 if(theirs.length == n-1){
-                    moveScores[key] += 100000
+                    moveScores[key] += 500000000
                 }
             }
         }
@@ -79,16 +185,28 @@ export function scoreBoard(turn) {
 
 }
 export function getTop(turn, x) {
-    let entries = Object.entries(scoreBoard(turn))
+    let entries = Object.entries(moveFinder(turn))
     for (let i = entries.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1))
         ;[entries[i], entries[j]] = [entries[j], entries[i]]
     }
-    console.log(entries.sort((a, b) => (b[1] || -1) - (a[1] || -1)).slice(0, x))
-    return entries
-        .sort((a, b) => (b[1] || -1) - (a[1] || -1))
+    let tester = entries.sort((a, b) => (b[1] || -1) - (a[1] || -1))
+    if(tester[0] == -1){
+        return []
+    }
+    entries = entries
+        .sort((a, b) => (b[1] ?? -1) - (a[1] ?? -1))
         .slice(0, x)
         .map(([key]) => key.split(',').map(Number)) 
+    if(entries)
+    return entries
+}
+
+export function obviousScore(turn){
+    let entries = Object.entries(moveFinder(turn))
+    entries = entries
+        .sort((a, b) => (b[1] ?? -1) - (a[1] ?? -1))
+    return entries[0][1]
 }
 
 function sim(x, y, w, z, turn) {
@@ -97,4 +215,5 @@ function sim(x, y, w, z, turn) {
 function unsim(x, y, w, z) {
     boxes[x][y][w][z].state = null
 }
+
 

@@ -110,7 +110,7 @@ export function onClick(x, y, w, z, you) {
     turnsetup()
 
     if(cpu>0 && you){
-        let [x2, y2, w2, z2] = single.getTop(turn, 1)[0]
+        let [x2, y2, w2, z2] = single.computerMove(turn)
         onClick(x2, y2, w2, z2, false)
     }
 }
