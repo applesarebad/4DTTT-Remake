@@ -15,7 +15,7 @@ let cpu
 let totalturns = 0
 
 export { boxes, n, d }
-export function init(size, dim, computer) {
+export function init(size, dim) {
     totalturns = 0
     turn = 1
     gameover = false
@@ -23,7 +23,7 @@ export function init(size, dim, computer) {
     boxes = []
     n = size
     d = dim
-    cpu = computer
+    
     wmult = (n <= 3 || d <= 2) ? 2 : 1
 
     board = document.getElementById('board')
@@ -44,6 +44,11 @@ export function init(size, dim, computer) {
         boxes[x][y][w][z].el = el
     })
     turnsetup()
+}
+export function singleInit(computer, turning){
+    cpu = computer
+    yourturn = turning
+    single.singleInit(computer)
 }
 
 export function onlineinit(turning, sending){
@@ -89,7 +94,7 @@ export function onClick(x, y, w, z, you) {
     //ignore when its not good inptu
     if (gameover) return
     if (getState(x, y, w, z) !== null) return
-    if (online && yourturn != turn && you) return 
+    if ((online || cpu>0)&& yourturn != turn && you) return 
 
     if (online) send({ type: "move", x, y, w, z, myMove: false });
 
@@ -111,8 +116,10 @@ export function onClick(x, y, w, z, you) {
     turnsetup()
 
     if(cpu>0 && you){
-        let [x2, y2, w2, z2] = single.computerMove(turn)
-        onClick(x2, y2, w2, z2, false)
+        setTimeout(() => {
+            let [x2, y2, w2, z2] = single.computerMove(turn)
+            onClick(x2, y2, w2, z2, false)
+        }, 300)  
     }
 }
 

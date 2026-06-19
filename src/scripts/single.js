@@ -26,10 +26,16 @@ export function singleInit(computer){
     cpu = computer
     getAllLines()
 }
-export function computerMove(turn) {
-    let moves = getTop(turn, 20); 
+export function computerMove(turn){
+    return hardMove(turn)
+}
+
+export function hardMove(turn) {
+    
+    let moves = getTop(turn, 10); 
+    console.log(getTop(turn,300))
     if (moves.length == 0) return null;
-    let depth = 3
+    let depth = 6
 
     let bestEval = -Infinity
     let bestMove = moves[0]
@@ -40,8 +46,10 @@ export function computerMove(turn) {
     
     for(let move of moves){
         sim(...move, turn)
-        let moveEval = minimax(depth-1, -Infinity, Infinity, false, turn)
-        unsim(...move)
+       let eval1 = boardEval(turn)
+    let moveEval = minimax(depth-1, -Infinity, Infinity, false, turn)
+    unsim(...move)
+    console.log(move, 'immediate eval:', eval1, 'minimax eval:', moveEval)
         if (moveEval > bestEval){
             bestEval = moveEval
             bestMove = move
@@ -53,6 +61,7 @@ export function computerMove(turn) {
 export function minimax(depth, a, b, memaxing, myturn){
 
     let currentScore = boardEval(myturn)
+
     if (currentScore >= 100000000 || currentScore <= -100000000) {
         return currentScore
     }
@@ -60,7 +69,8 @@ export function minimax(depth, a, b, memaxing, myturn){
     if(depth == 0) return currentScore
 
     let currturn = memaxing ? myturn : 3-myturn
-    let moves = getTop(currturn, 20)
+    let moves = getTop(currturn, 5)
+    
     //all moves done
     if(moves.length == 0) return 0
 
@@ -117,8 +127,8 @@ export function boardEval(turn){
             }
         }
 
-        if(mine == n) return 100000000
-        if(theirs == n) return -100000000
+        if(mine == n) return 9990000000000
+        if(theirs == n) return -10000000000
         
         if(theirs == 0){
             score += mine**2
@@ -127,13 +137,13 @@ export function boardEval(turn){
             }
         }
         else if(mine == 0){
-            score -= theirs**2
+            score -= theirs**4
             if(theirs == n-1){
                 themfork+=1 
             }
         }
     }
-    if (mefork >= 2) score += 200000
+    if (mefork >= 2) score += 100000
     if (themfork >=2) score -= 100000
     return score
 }
@@ -163,7 +173,7 @@ export function moveFinder(turn) {
         if(theirs.length == 0){
             for(let e of empty){
                 let key = e.join(',')
-                moveScores[key] += mine.length**2 + 1 
+                moveScores[key] += mine.length**3 + 1 
                 if(mine.length == n-1){
                     moveScores[key] += 1000000000
                 }
@@ -172,9 +182,9 @@ export function moveFinder(turn) {
         else if(mine.length == 0){
             for(let e of empty){
                 let key = e.join(',')
-                moveScores[key] += theirs.length**2
+                moveScores[key] += theirs.length**3
                 if(theirs.length == n-1){
-                    moveScores[key] += 500000000
+                    moveScores[key] += 50000000
                 }
             }
         }
@@ -184,21 +194,21 @@ export function moveFinder(turn) {
 
 }
 export function getTop(turn, x) {
-    let entries = Object.entries(moveFinder(turn))
+    let entries = Object.entries(moveFinder(turn));
+    if (entries.length === 0) return [];
+
     for (let i = entries.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1))
-        ;[entries[i], entries[j]] = [entries[j], entries[i]]
+        const j = Math.floor(Math.random() * (i + 1));
+        [entries[i], entries[j]] = [entries[j], entries[i]];
     }
-    let tester = entries.sort((a, b) => (b[1] || -1) - (a[1] || -1))
-    if(tester[0] == -1){
-        return []
+    
+    entries.sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0));
+
+    if ((entries[0][1] ?? -1) === -1) {
+        return [];
     }
-    entries = entries
-        .sort((a, b) => (b[1] ?? -1) - (a[1] ?? -1))
-        .slice(0, x)
-        .map(([key]) => key.split(',').map(Number)) 
-    if(entries)
-    return entries
+
+    return entries.slice(0, x).map(([key]) => key.split(',').map(Number));
 }
 
 export function obviousScore(turn){

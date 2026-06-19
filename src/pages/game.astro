@@ -150,7 +150,7 @@ import Lobby from "../components/lobby.astro";
                 }
             });
             conn.on("close", () => {
-                dc()
+                dc();
             });
         });
     }
@@ -204,7 +204,7 @@ import Lobby from "../components/lobby.astro";
             });
 
             conn.on("close", () => {
-                dc()
+                dc();
             });
         });
     };
@@ -212,14 +212,13 @@ import Lobby from "../components/lobby.astro";
     // game
 
     function start() {
-
         let board = document.getElementById("board");
         let boardcopy = board.cloneNode(true);
-        board.replaceWith(boardcopy)
-        board = boardcopy
+        board.replaceWith(boardcopy);
+        board = boardcopy;
         if (board == null) board = document.createElement("div");
         board.replaceChildren();
-        
+
         board.style.display = "grid";
         board.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
         board.style.gap = "10px";
@@ -264,7 +263,6 @@ import Lobby from "../components/lobby.astro";
                     //if (conn) conn.send({ x, y, w, z });
                     game.onClick(x, y, w, z, true);
                 }
-                
             }
         });
 
@@ -282,14 +280,16 @@ import Lobby from "../components/lobby.astro";
         });
 
         board.addEventListener("mouseleave", () => game.onUnhover());
-        game.init(n, d, cpu);
+        game.init(n, d);
         if (online) game.onlineinit(yourturn, (data) => conn?.send(data));
-        single.singleInit(cpu)
+        game.singleInit(cpu,yourturn);
 
-        if (cpu>0 && !online){
-            if (yourturn == 2){
-                let [x2, y2, w2, z2] = single.getTop(1, 20000)[0]
-                game.onClick(x2, y2, w2, z2, false)
+        if (cpu > 0 && !online) {
+            if (yourturn == 2) {
+                setTimeout(() => {
+                    let [x2, y2, w2, z2] = single.getTop(1, 20000)[0];
+                    game.onClick(x2, y2, w2, z2, false);
+                }, 300);
             }
         }
     }
