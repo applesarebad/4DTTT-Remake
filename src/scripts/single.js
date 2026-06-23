@@ -32,10 +32,22 @@ export function computerMove(turn){
 
 export function hardMove(turn) {
     
-    let moves = getTop(turn, 10); 
+    let moves = getTop(turn, 7); 
     console.log(getTop(turn,300))
     if (moves.length == 0) return null;
+    
     let depth = 6
+    if(d==4 && n >= 5){
+        depth = 4
+    }
+    if(d==3 && n <= 4){
+        depth = 8
+    }
+    if(d==2){
+        depth = 10
+    }
+
+
 
     let bestEval = -Infinity
     let bestMove = moves[0]
@@ -226,3 +238,9 @@ function unsim(x, y, w, z) {
 }
 
 
+
+
+//TODO: 
+// Index make buttons work
+// Make Setup actually work
+// 

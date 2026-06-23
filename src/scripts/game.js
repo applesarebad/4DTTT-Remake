@@ -13,6 +13,7 @@ let send
 let yourturn = 0
 let cpu
 let totalturns = 0
+let computerfreeze = false
 
 export { boxes, n, d }
 export function init(size, dim) {
@@ -116,9 +117,14 @@ export function onClick(x, y, w, z, you) {
     turnsetup()
 
     if(cpu>0 && you){
+        document.getElementById('turnmsg').innerHTML = "Computer is thinking"
+        onUnhover()
+        computerfreeze = true
         setTimeout(() => {
+            onUnhover()
             let [x2, y2, w2, z2] = single.computerMove(turn)
             onClick(x2, y2, w2, z2, false)
+            computerfreeze = false
         }, 300)  
     }
 }
@@ -183,6 +189,7 @@ export function animation(el, n){
 }
 export function onHover(x, y, w, z) {
     onUnhover()
+    if(computerfreeze) return 
     const lines = checkPossibleLines([x, y, w, z])
     const COLOURS = ['#ff8888', '#8888ff']
     let colour = turn === 1
