@@ -27,9 +27,22 @@ export function singleInit(computer){
     getAllLines()
 }
 export function computerMove(turn){
-    return hardMove(turn)
+    if (cpu == 1) return EasyMove(turn)
+    else if (cpu ==2) return MedMove(turn)
+    else return hardMove(turn)
 }
-
+export function EasyMove(turn){
+    let possible = getTop(turn, 20)
+    if (obviousScore(turn) >= 1000){
+        if (Math.random() >= 0.2){
+            return possible[0]
+        }
+    }
+    return possible[Math.floor(Math.random()*possible.length)]
+}
+export function MedMove(turn) {
+    return getTop(turn, 1)[0]
+}
 export function hardMove(turn) {
     
     let moves = getTop(turn, 7); 

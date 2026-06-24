@@ -71,7 +71,7 @@ import Lobby from "../components/lobby.astro";
     import * as single from "../scripts/single.js";
     let n = parseInt(localStorage.getItem("n")) || 4;
     let d = parseInt(localStorage.getItem("d")) || 4;
-    let cpu = parseInt(localStorage.getItem("cpu")) || 1;
+    let cpu = parseInt(localStorage.getItem("cpu")) || 0;
     let wmult = n <= 3 || d <= 2 ? 2 : 1;
 
     const role = new URLSearchParams(window.location.search).get("role");

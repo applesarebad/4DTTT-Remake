@@ -9,24 +9,7 @@ import titleimg from "../assets/Title.png";
 		<img src={titleimg.src} class="max-h-48 w-auto" />
 
 		<div class="flex items-center justify-center gap-20">
-			<!--hover-->
-			<div class="flex flex-col items-center justify-between">
-				<span class="text-2xl text-purple-900">hover indicator</span>
-				<div id="changeIndicator" class="flex gap-4 pt-2">
-					<div
-						class="btn w-full text-center"
-						onclick="changeIndicator(true)"
-					>
-						On
-					</div>
-					<div
-						class="btn w-full text-center"
-						onclick="changeIndicator(false)"
-					>
-						Off
-					</div>
-				</div>
-			</div>
+		
 			<!--size-->
 			<div class="flex flex-col justify-center items-center">
 				<div class="text-2xl text-purple-900">size</div>
@@ -59,9 +42,15 @@ import titleimg from "../assets/Title.png";
 					Singleplayer
 				</div>
 				<div class="flex flex-col justify-center w-1/2 gap-5">
-					<button class="btn">easy</button>
-					<button class="btn">medium</button>
-					<button class="btn">hard</button>
+					<button class="btn" onclick="startGame('/game', 1)"
+						>easy</button
+					>
+					<button class="btn" onclick="startGame('/game', 2)"
+						>medium</button
+					>
+					<button class="btn" onclick="startGame('/game', 3)"
+						>hard</button
+					>
 				</div>
 			</div>
 			<!--mult-->
@@ -70,9 +59,15 @@ import titleimg from "../assets/Title.png";
 					Multiplayer
 				</div>
 				<div class="flex flex-col justify-center w-1/2 gap-5">
-					<a href="/game" class="btn">local</a>
-					<a href='/game?role=host' class="btn">host</a>
-					<a href='/game?role=join' class="btn">join</a>
+					<button class="btn" onclick="startGame('/game', 0)"
+						>local</button
+					>
+					<button class="btn" onclick="startGame('/game?role=host', 0)"
+						>host</button
+					>
+					<button class="btn" onclick="startGame('/game?role=join', 0)"
+						>join</button
+					>
 				</div>
 			</div>
 		</div>
@@ -128,11 +123,6 @@ import titleimg from "../assets/Title.png";
 		}
 	}
 
-	function changeIndicator(x) {
-		localStorage.setItem("indicator", x);
-		on = x;
-		setActive("indicator", x ? "On" : "Off");
-	}
 	function changen(x) {
 		localStorage.setItem("n", x);
 		n = x;
@@ -146,6 +136,11 @@ import titleimg from "../assets/Title.png";
 		warningcheck();
 	}
 
+	function startGame(link, dif) {
+		localStorage.setItem("cpu", dif);
+		window.location.href = link;
+	}
+
 	setActive("size", n);
 	setActive("dim", d);
 	setActive("indicator", on ? "On" : "Off");
@@ -153,22 +148,16 @@ import titleimg from "../assets/Title.png";
 
 	function warningcheck() {
 		el = document.getElementById("warning");
-		if (n == 2)
-			el.innerHTML = 'A size of 2 will lead to an interesting "game"';
+		if (n == 2) el.innerHTML = "Hmm...";
 		else if (n == 3 && d >= 3)
 			el.innerHTML =
 				"A size of 3 in higher dimensions leads to an easy forced win. Try and find it!";
 		else if (n - d >= 2 && d != 4)
 			el.innerHTML =
 				"When the size is much larger than the dimension, drawing is more common!";
-		else if (n == 6 && d == 4)
-			el.innerHTML =
-				"A 6x6x6x6 game is untested... explore at your own risk";
 		else if (n == 3 && d == 2) el.innerHTML = "Is this necessary...";
 		else
 			el.innerHTML =
 				"4x4x4x4 is recommended for new players.   5x5x5x5 is recommended for longer games.";
 	}
 </script>
-
-
