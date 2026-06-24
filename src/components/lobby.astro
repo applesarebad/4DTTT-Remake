@@ -4,22 +4,22 @@ import "../styles/global.css";
 ---
 
 <Layout>
-    <div id = "lobby">
-    <div class="fixed top-10 left-29">
+    <div id = "lobby" class="min-h-screen min-w-screen">
+    <div class="fixed top-3 left-6 md:top-10 md:left-29">
         <a id="back" class="btn none" href="/">back</a>
     </div>
 
     <div
         class="flex justify-center items-center gap-6 p-10 flex-col min-h-screen"
     >
-        <div id="hostview" class="flex flex-col items-center gap-4">
-            <div class="text-5xl text-purple-900">
+        <div id="hostview" class="flex flex-col items-center justify-center gap-4 text-center">
+            <div class="text-5xl text-purple-900 justify-center">
                 send this to your friend!
             </div>
 
             <div
                 id="code"
-                class="text-9xl font-bold text-purple-900 pt-20 pb-10"
+                class=" text-8xl md:text-9xl font-bold text-purple-900 pt-20 pb-10"
             >
             </div>
             <button class="btn" onclick="copyCode()">copy</button>
@@ -31,10 +31,11 @@ import "../styles/global.css";
                 id="codeinput"
                 type="text"
                 maxlength="5"
-                class="text-6xl font-bold tracking-widest text-center text-purple-900 bg-purple-100 px-6 py-4 rounded-sm uppercase border-2 border-purple-300 outline-none focus:border-purple-500"
+                class="text-6xl w-[75vw] md:w-auto font-bold tracking-widest md:max-w-[100%] text-center text-purple-900 bg-purple-100 md:px-6 py-4 rounded-sm uppercase border-2 border-purple-300 outline-none focus:border-purple-500"
                 placeholder="-----"
                 autocomplete="off"
             />
+            <div class = "h-8"></div>
             <button id = "jbtn" class="btn" onclick="joinGame()">join</button>
             <div id="joinstatus" class="text-xl text-purple-900 invisible">empty</div>
         </div>
@@ -59,5 +60,6 @@ import "../styles/global.css";
             rgba(221, 221, 255, 1) 55%,
             rgba(170, 170, 255, 1) 100%
         );
+        min-height: 100vh;
     }
 </style>

@@ -8,7 +8,7 @@ import titleimg from "../assets/Title.png";
 	<div class="flex justify-center items-center gap-2 p-10 flex-col">
 		<img src={titleimg.src} class="max-h-48 w-auto" />
 
-		<div class="flex items-center justify-center gap-20">
+		<div class="flex flex-col md:flex-row items-center justify-center gap-3 md:gap-20">
 		
 			<!--size-->
 			<div class="flex flex-col justify-center items-center">
@@ -35,13 +35,13 @@ import titleimg from "../assets/Title.png";
 			4x4x4x4 is recommended for new players. 5x5x5x5 is recommended for
 			longer games.
 		</div>
-		<div class="flex justify-center w-[70%] pt-10">
+		<div class="flex flex-col md:flex-row justify-center md:w-[70%] pt-10">
 			<!--single-->
-			<div class="flex flex-col gap-4 w-1/2 justify-center items-center">
+			<div class="flex flex-col gap-4 md:w-1/2 justify-center items-center">
 				<div class="text-2xl font-bold text-purple-900 pb-1">
 					Singleplayer
 				</div>
-				<div class="flex flex-col justify-center w-1/2 gap-5">
+				<div class="flex flex-row md:flex-col justify-center w-1/2 gap-5">
 					<button class="btn" onclick="startGame('/game', 1)"
 						>easy</button
 					>
@@ -54,11 +54,11 @@ import titleimg from "../assets/Title.png";
 				</div>
 			</div>
 			<!--mult-->
-			<div class="flex flex-col gap-4 w-1/2 justify-center items-center">
-				<div class="text-2xl font-bold text-purple-900 pb-1">
+			<div class="flex flex-col gap-4 md:w-1/2 justify-center items-center">
+				<div class="text-2xl font-bold text-purple-900 pb-1 pt-6 md:pt-0">
 					Multiplayer
 				</div>
-				<div class="flex flex-col justify-center w-1/2 gap-5">
+				<div class="flex flex-row md:flex-col justify-center w-1/2 gap-5">
 					<button class="btn" onclick="startGame('/game', 0)"
 						>local</button
 					>

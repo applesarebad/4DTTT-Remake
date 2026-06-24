@@ -6,49 +6,62 @@ import Lobby from "../components/lobby.astro";
 
 <Layout>
     <Lobby />
-    <div id="game">
-        <div id="all" class="flex justify-center items-center">
-            <div
-                id="titleside"
-                class="flex min-w-[15%] flex-col gap-4 self-stretch items-center p-10"
-            >
-                <a
-                    id="back"
-                    class="bg-purple-300 text-purple-900 text-xl font-bold px-4 py-2 rounded-sm hover:bg-purple-400"
-                    href="/"
-                >
-                    back
-                </a>
+    <div id="game" <div class="fixed top-6 left-3 md:top-10 md:left-29">
+        <a
+            id="back"
+            class="bg-purple-300 text-purple-900 text-xl font-bold px-4 py-2 rounded-sm hover:bg-purple-400"
+            href="/">back</a
+        >
+    </div>
+    <div
+        id="all"
+        class="flex flex-col md:flex-row justify-center items-center min-h-screen"
+    >
+        <div
+            id="titleside"
+            class="md:flex min-w-[15%] md:flex-col md:gap-4 self-stretch items-center p-10"
+        >
+        </div>
+        <div
+            id="board"
+            class="min-w-[min(100vh,100vw)] max-w-[min(100vh,100vw)] aspect-square p-2 flex-shrink-0"
+        >
+        </div>
+        <div
+            id="infoside"
+            class="gap-4 items-center flex flex-1 flex-col self-stretch justify-center"
+        >
+            <div id="header" class="hidden md:block text-4xl font-bold">
+                title
             </div>
-            <div
-                id="board"
-                class="min-w-[min(100vh,100vw)] max-w-[min(100vh,100vw)] aspect-square p-2 flex-shrink-0"
-            >
-            </div>
-            <div
-                id="infoside"
-                class="gap-4 items-center flex flex-1 flex-col self-stretch justify-center"
-            >
-                <div id="header" class="text-4xl font-bold">title</div>
-                <div class="h-[5%]"></div>
+            <div class="h-[5%]"></div>
+            <div class="flex md:flex-col items-center justify-center">
                 <div class="items-center flex flex-col">
-                    <img id="turn" class="max-w-[70%] aspect-square" />
+                    <img
+                        id="turn"
+                        class="max-w-[30%] md:max-w-[70%] aspect-square"
+                    />
                     <p id="turnmsg" class="text-3xl font-bold"></p>
                 </div>
-                <div class="h-[10%]"></div>
+                <div class="md:h-[10%]"></div>
 
-                <div class="flex items-center justify-center">
-                    <p id="yourturnmsg" class="text-xl font-bold"></p>
+                <div
+                    class="flex flex-col md:flex-row items-center justify-center"
+                >
+                    <p id="yourturnmsg" class="text-3xl md:text-3xl font-bold">
+                    </p>
                     <img id="yourturnimg" class="aspect-square max-w-[30%]" />
                 </div>
-                <div class="h-[10%]"></div>
-                <div
-                    id="reset"
-                    class="bg-purple-300 text-purple-900 text-xl font-bold px-4 py-2 rounded-sm hover:bg-purple-400"
-                >
-                    reset
-                </div>
             </div>
+
+            <div class="h-[10%]"></div>
+            <div
+                id="reset"
+                class="bg-purple-300 text-purple-900 text-xl font-bold px-4 py-2 rounded-sm hover:bg-purple-400"
+            >
+                reset
+            </div>
+            <div class="h-auto"></div>
         </div>
     </div>
 </Layout>
@@ -221,7 +234,7 @@ import Lobby from "../components/lobby.astro";
 
         board.style.display = "grid";
         board.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
-        board.style.gap = "10px";
+        board.style.gap = window.innerWidth < 768 ? "5px" : "10px";
 
         for (let i = 0; i < n; i++) {
             for (let j = 0; j < n; j++) {
@@ -230,7 +243,7 @@ import Lobby from "../components/lobby.astro";
                 sub.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
                 sub.className = "aspect-square";
                 sub.style.gap = `${2 * wmult}px`;
-
+                
                 for (let k = 0; k < n; k++) {
                     for (let l = 0; l < n; l++) {
                         let cell = document.createElement("div");
@@ -282,7 +295,7 @@ import Lobby from "../components/lobby.astro";
         board.addEventListener("mouseleave", () => game.onUnhover());
         game.init(n, d);
         if (online) game.onlineinit(yourturn, (data) => conn?.send(data));
-        game.singleInit(cpu,yourturn);
+        game.singleInit(cpu, yourturn);
 
         if (cpu > 0 && !online) {
             if (yourturn == 2) {
