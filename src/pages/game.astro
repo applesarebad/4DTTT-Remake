@@ -6,20 +6,19 @@ import Lobby from "../components/lobby.astro";
 
 <Layout>
     <Lobby />
-    <div id="game" <div class="fixed top-6 left-3 md:top-10 md:left-29">
+    <div id="game">
         <a
             id="back"
-            class="bg-purple-300 text-purple-900 text-xl font-bold px-4 py-2 rounded-sm hover:bg-purple-400"
+            class="bg-purple-300 text-purple-900 text-xl font-bold px-4 py-2 rounded-sm hover:bg-purple-400 fixed top-6 left-3 md:top-10 md:left-29"
             href="/">back</a
         >
-    </div>
     <div
         id="all"
         class="flex flex-col md:flex-row justify-center items-center min-h-screen"
     >
         <div
             id="titleside"
-            class="md:flex min-w-[15%] md:flex-col md:gap-4 self-stretch items-center p-10"
+            class="mflex min-w-[15%] md:flex-col md:gap-4 self-stretch items-center p-10"
         >
         </div>
         <div
@@ -63,6 +62,7 @@ import Lobby from "../components/lobby.astro";
             </div>
             <div class="h-auto"></div>
         </div>
+    </div>
     </div>
 </Layout>
 
