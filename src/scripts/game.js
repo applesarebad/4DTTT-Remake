@@ -161,12 +161,13 @@ export function wincheck(x,y,w,z){
 				origin: { x:0.4, y: 0.6  },
 			});
             gtag("event", "win_game", {
-            turn,
-            cpu,
+            winturn: turn,
+            wincpu: cpu,
             beatcpu: cpu>0 && turn == yourturn,
-            online,
-            n,
-            d
+            winonline: online,
+            winn: n,
+            wind: d,
+            winline: line
         });
             return
         }
