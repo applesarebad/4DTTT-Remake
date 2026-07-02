@@ -8,12 +8,30 @@
 		<meta name="generator" content={Astro.generator} />
 		<title>4D TTT</title>
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Schoolbell&family=Indie+Flower&display=swap" rel="stylesheet" />
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js" is:inline></script>
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Schoolbell&family=Indie+Flower&display=swap"
+			rel="stylesheet"
+		/>
+		<script
+			src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"
+			is:inline></script>
+		<script
+			is:inline
+			async
+			src="https://www.googletagmanager.com/gtag/js?id=G-MVB4BFTE6R"
+		></script>
+		<script is:inline>
+			window.dataLayer = window.dataLayer || [];
+			function gtag() {
+				dataLayer.push(arguments);
+			}
+			gtag("js", new Date());
+
+			gtag("config", "G-MVB4BFTE6R");
+		</script>
 	</head>
 	<body>
-		
 		<slot />
 	</body>
 </html>
@@ -30,4 +48,3 @@
 		font-weight: bold;
 	}
 </style>
-

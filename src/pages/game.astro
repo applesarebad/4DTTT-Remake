@@ -225,6 +225,12 @@ import Lobby from "../components/lobby.astro";
     // game
 
     function start() {
+        gtag("event", "start_game", {
+            cpu,
+            online,
+            n,
+            d
+        });
         let board = document.getElementById("board");
         let boardcopy = board.cloneNode(true);
         board.replaceWith(boardcopy);

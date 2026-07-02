@@ -160,6 +160,14 @@ export function wincheck(x,y,w,z){
 				spread: 100,
 				origin: { x:0.4, y: 0.6  },
 			});
+            gtag("event", "win_game", {
+            turn,
+            cpu,
+            beatcpu: cpu>0 && turn == yourturn,
+            online,
+            n,
+            d
+        });
             return
         }
     }
