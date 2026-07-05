@@ -160,6 +160,9 @@ export function wincheck(x,y,w,z){
 				spread: 100,
 				origin: { x:0.4, y: 0.6  },
 			});
+            if(cpu == 3 && turn != yourturn){
+                gtag("event", "win_game_hard")
+            }
             gtag("event", "win_game", {
             winturn: turn,
             wincpu: cpu,
@@ -168,6 +171,7 @@ export function wincheck(x,y,w,z){
             winn: n,
             wind: d,
             winline: line
+            
         });
             return
         }
