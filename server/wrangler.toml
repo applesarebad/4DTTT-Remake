@@ -1,0 +1,16 @@
+name = "fourdttt-stats"
+main = "worker.js"
+compatibility_date = "2026-01-01"
+
+# Origins allowed to call the service. Anything not listed gets a response with
+# no CORS grant, which the browser then refuses.
+[vars]
+ALLOWED_ORIGINS = "https://4dttt.andrew-zhang.ca,http://localhost:4321"
+
+[[d1_databases]]
+# `wrangler d1 create` suggests naming the binding after the database, but the
+# binding is just the property name on `env` and worker.js reads `env.DB`.
+# Renaming it here means renaming it there too.
+binding = "DB"
+database_name = "fourdttt-stats"
+database_id = "7e299831-eef7-4c1d-86b9-a4830a12d67c"
