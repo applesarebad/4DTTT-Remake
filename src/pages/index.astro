@@ -35,7 +35,12 @@ import titleimg from "../assets/Title.png";
 			4x4x4x4 is recommended for new players. 5x5x5x5 is recommended for
 			longer games.
 		</div>
-		<div class="flex flex-col md:flex-row justify-center md:w-[70%] pt-10">
+		<!--daily-->
+		<div class="flex flex-col justify-center items-center pt-8 gap-2">
+			<a class="btn" href="/game?puzzle=daily">daily puzzle</a>
+			<div id="dailystatus" class="text-xl text-purple-900 h-7"></div>
+		</div>
+		<div class="flex flex-col md:flex-row justify-center md:w-[70%] pt-4">
 			<!--single-->
 			<div class="flex flex-col gap-4 md:w-1/2 justify-center items-center">
 				<div class="text-2xl font-bold text-purple-900 pb-1">
@@ -98,7 +103,6 @@ import titleimg from "../assets/Title.png";
 <script is:inline>
 	// @ts-nocheck
 
-	on = localStorage.getItem("indicator") === "true";
 	n = parseInt(localStorage.getItem("n")) || 4;
 	d = parseInt(localStorage.getItem("d")) || 4;
 
@@ -111,10 +115,8 @@ import titleimg from "../assets/Title.png";
 			case "dim":
 				el = document.getElementById("changed");
 				break;
-			case "indicator":
-				el = document.getElementById("changeIndicator");
-				break;
 		}
+		if (!el) return;
 		for (const b of el.children) {
 			b.classList.toggle(
 				"active",
@@ -143,7 +145,6 @@ import titleimg from "../assets/Title.png";
 
 	setActive("size", n);
 	setActive("dim", d);
-	setActive("indicator", on ? "On" : "Off");
 	warningcheck();
 
 	function warningcheck() {
@@ -159,5 +160,30 @@ import titleimg from "../assets/Title.png";
 		else
 			el.innerHTML =
 				"4x4x4x4 is recommended for new players.   5x5x5x5 is recommended for longer games.";
+	}
+</script>
+
+<script>
+	// @ts-nocheck
+	import { dayNumber, resultFor, streak } from "../scripts/daily.js";
+	import { fetchStats, summary } from "../scripts/stats.js";
+
+	const status = document.getElementById("dailystatus");
+	if (status) {
+		const today = dayNumber();
+		const result = resultFor(today);
+		const run = streak(today);
+		const parts = [];
+		if (result === "solved") parts.push("solved today");
+		else if (result === "failed") parts.push("not solved yet");
+		if (run > 0) parts.push(`streak ${run}`);
+		status.innerHTML = parts.join(" \u00b7 ");
+
+		fetchStats(today).then((s) => {
+			const line = summary(s);
+			if (!line) return;
+			parts.push(line);
+			status.innerHTML = parts.join(" \u00b7 ");
+		});
 	}
 </script>

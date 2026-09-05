@@ -14,9 +14,15 @@ let yourturn = 0
 let cpu
 let totalturns = 0
 let computerfreeze = false
+let puzzle = null
 
 export { boxes, n, d }
+
+export function setPuzzle(hooks) {
+    puzzle = hooks
+}
 export function init(size, dim) {
+    puzzle = null
     totalturns = 0
     turn = 1
     gameover = false
@@ -59,10 +65,40 @@ export function onlineinit(turning, sending){
 }
 
 export function turnsetup(){
-        document.getElementById("turnmsg").innerHTML = turn === 1 ? `X's turn` : `O's turn`
+        document.getElementById("turnmsg").innerHTML = puzzle
+            ? puzzle.status()
+            : (turn === 1 ? `X's turn` : `O's turn`)
         animation(document.getElementById("turn"),turn)
         document.getElementById("all").style.backgroundColor = turn === 1 ? "#ffcccc" : "#ccccff"
     
+}
+
+
+export function loadPosition(cells, toMove) {
+    let placed = 0
+    for (let i = 0; i < cells.length; i++) {
+        const player = cells[i]
+        if (!player) continue
+        const z = i % n
+        const w = Math.floor(i / n) % n
+        const y = Math.floor(i / (n * n)) % n
+        const x = Math.floor(i / (n * n * n)) % n
+        setState(x, y, w, z, player)
+        claimCell(x, y, w, z, player, false)
+        placed++
+    }
+    totalturns = placed
+    turn = toMove
+    turnsetup()
+}
+
+export function isGameover() {
+    return gameover
+}
+
+export function endGame() {
+    gameover = true
+    document.getElementById("reset").style.visibility = "visible"
 }
 
 export function get(x, y, w, z) {
@@ -100,6 +136,7 @@ export function onClick(x, y, w, z, you) {
     if (online) send({ type: "move", x, y, w, z, myMove: false });
 
     //actual change 
+    if (puzzle && you) puzzle.onPlayerMove()
     setState(x, y, w, z, turn)
     const cell = get(x, y, w, z)
     onUnhover()
@@ -111,7 +148,6 @@ export function onClick(x, y, w, z, you) {
     get(...prevCoord).style.outline = turn === 1 ? `${2 * wmult}px solid red` : `${2 * wmult}px solid blue`
 
     wincheck(x,y,w,z)
-    console.log(x,y,z,w)
     if(gameover) return
     turn = 3-turn
     turnsetup()
@@ -125,6 +161,7 @@ export function onClick(x, y, w, z, you) {
             let [x2, y2, w2, z2] = single.computerMove(turn)
             onClick(x2, y2, w2, z2, false)
             computerfreeze = false
+            if (puzzle) puzzle.onSettled()
         }, 300)  
     }
 }
@@ -153,9 +190,12 @@ export function wincheck(x,y,w,z){
                 get(...prevCoord).style.outline = turn === 1 ? `${2 * wmult}px solid purple` : `${2 * wmult}px solid purple`
                 get(...prevCoord).style.border = turn === 1 ? `${3 * wmult}px solid purple` : `${2 * wmult}px solid purple`
             }
-            document.getElementById("turnmsg").innerHTML = turn == 1 ? `Player X wins!` : 'Player O wins!'
+            const playerWon = turn === yourturn
+            document.getElementById("turnmsg").innerHTML = puzzle
+                ? puzzle.endMessage(playerWon)
+                : (turn == 1 ? `Player X wins!` : 'Player O wins!')
             document.getElementById("reset").style.visibility = "visible"
-            confetti({
+            if (!puzzle || playerWon) confetti({
 				particleCount: 200,
 				spread: 100,
 				origin: { x:0.4, y: 0.6  },
@@ -167,22 +207,25 @@ export function wincheck(x,y,w,z){
             winonline: online,
             winn: n,
             wind: d,
-            winline: line
+            winline: line,
+            winpuzzle: puzzle ? puzzle.id() : null
         });
             return
         }
     }
 }
-export function claimCell(x, y, w, z, player) {
+export function claimCell(x, y, w, z, player, animate = true) {
     const el = get(x, y, w, z)
     const img = document.createElement('img')
-    img.src = `/${player === 1 ? 'X' : 'O'}/0.png`
+    // A loaded puzzle paints dozens of cells at once; running the draw-in
+    // animation on every one of them is noise, so it lands on the last frame.
+    img.src = `/${player === 1 ? 'X' : 'O'}/${animate ? 0 : 6}.png`
     img.style.width = '100%'
     img.style.height = '100%'
     img.style.pointerEvents = 'none'
     el.appendChild(img)
 
-    animation(img, player)
+    if (animate) animation(img, player)
 }
 
 export function animation(el, n){
@@ -218,17 +261,6 @@ export function onUnhover() {
     for(let b of allboxes()){
         b.el.style.background = "white"
     }
-}
-
-export function reset() {
-    boxes = {}
-    turn = 1
-    gameover = false
-    prevCoord = null
-    document.querySelectorAll('.cell').forEach(el => {
-        el.style.background = 'white'
-        el.style.outline = ''
-    })
 }
 
 export function checkPossibleLines(coord) {

@@ -82,14 +82,25 @@ import Lobby from "../components/lobby.astro";
     // @ts-nocheck
     import * as game from "../scripts/game.js";
     import * as single from "../scripts/single.js";
-    let n = parseInt(localStorage.getItem("n")) || 4;
-    let d = parseInt(localStorage.getItem("d")) || 4;
-    let cpu = parseInt(localStorage.getItem("cpu")) || 0;
+    import * as puzzlemode from "../scripts/puzzle.js";
+    import { tapAction, PLAY } from "../scripts/tap.js";
+
+    // Puzzle mode is always 4x4x4x4. It reads that off the URL rather than
+    // localStorage on purpose: writing n and d here would silently overwrite
+    // whatever board size the player had chosen for ordinary games.
+    const isPuzzle =
+        new URLSearchParams(window.location.search).get("puzzle") === "daily";
+
+    let n = isPuzzle ? 4 : parseInt(localStorage.getItem("n")) || 4;
+    let d = isPuzzle ? 4 : parseInt(localStorage.getItem("d")) || 4;
+    let cpu = isPuzzle ? 2 : parseInt(localStorage.getItem("cpu")) || 0;
     let wmult = n <= 3 || d <= 2 ? 2 : 1;
 
     const role = new URLSearchParams(window.location.search).get("role");
     let online;
     let yourturn = 1;
+
+    if (isPuzzle) await puzzlemode.fetchCorpus();
     // lobby show/hide
     document.getElementById("hostview").style.display =
         role === "host" ? "flex" : "none";
@@ -229,7 +240,8 @@ import Lobby from "../components/lobby.astro";
             cpu,
             online,
             n,
-            d
+            d,
+            puzzle: isPuzzle ? puzzlemode.dayNumber() : null
         });
         let board = document.getElementById("board");
         let boardcopy = board.cloneNode(true);
@@ -237,6 +249,8 @@ import Lobby from "../components/lobby.astro";
         board = boardcopy;
         if (board == null) board = document.createElement("div");
         board.replaceChildren();
+
+        board.style.touchAction = "manipulation";
 
         board.style.display = "grid";
         board.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
@@ -271,18 +285,32 @@ import Lobby from "../components/lobby.astro";
             }
         }
 
+        let pointerKind = "mouse";
+        let armed = null;
+
+        board.addEventListener("pointerdown", (event) => {
+            pointerKind = event.pointerType || "mouse";
+        });
+
         board.addEventListener("click", (event) => {
             if (
-                event.target instanceof HTMLElement &&
-                event.target.classList.contains("cell")
-            ) {
-                const pos = event.target.dataset.pos;
-                if (pos) {
-                    let [x, y, w, z] = pos.split(",").map(Number);
-                    //if (conn) conn.send({ x, y, w, z });
-                    game.onClick(x, y, w, z, true);
-                }
-            }
+                !(event.target instanceof HTMLElement) ||
+                !event.target.classList.contains("cell")
+            )
+                return;
+            const pos = event.target.dataset.pos;
+            if (!pos) return;
+            const [x, y, w, z] = pos.split(",").map(Number);
+
+            const decision = tapAction({
+                touch: pointerKind === "touch" || pointerKind === "pen",
+                empty: game.getState(x, y, w, z) === null,
+                pos,
+                armed,
+            });
+            armed = decision.armed;
+            if (decision.action === PLAY) game.onClick(x, y, w, z, true);
+            else game.onHover(x, y, w, z);
         });
 
         board.addEventListener("mouseover", (event) => {
@@ -301,20 +329,34 @@ import Lobby from "../components/lobby.astro";
         board.addEventListener("mouseleave", () => game.onUnhover());
         game.init(n, d);
         if (online) game.onlineinit(yourturn, (data) => conn?.send(data));
-        game.singleInit(cpu, yourturn);
 
-        if (cpu > 0 && !online) {
-            if (yourturn == 2) {
-                setTimeout(() => {
-                    let [x2, y2, w2, z2] = single.getTop(1, 20000)[0];
-                    game.onClick(x2, y2, w2, z2, false);
-                }, 300);
+        if (isPuzzle) {
+
+            const entry = puzzlemode.begin();
+            yourturn = entry.t;
+            document.getElementById("reset").innerHTML = "retry";
+        } else {
+            game.singleInit(cpu, yourturn);
+
+            if (cpu > 0 && !online) {
+                if (yourturn == 2) {
+                    setTimeout(() => {
+                        let [x2, y2, w2, z2] = single.getTop(1, 20000)[0];
+                        game.onClick(x2, y2, w2, z2, false);
+                    }, 300);
+                }
             }
         }
     }
 
     const reset = document.getElementById("reset");
     function restart(you = true) {
+        // Retrying a puzzle replays the same position; only ordinary games
+        // swap who goes first.
+        if (isPuzzle) {
+            start();
+            return;
+        }
         yourturn = 3 - yourturn;
         if (online) {
             document.getElementById("yourturnimg").src =
@@ -331,5 +373,7 @@ import Lobby from "../components/lobby.astro";
 
     const header = document.getElementById("header");
     if (header)
-        header.innerHTML = n + (" X " + n).repeat(d - 1) + " Tic Tac Toe";
+        header.innerHTML = isPuzzle
+            ? `Daily Puzzle · ${puzzlemode.label()}`
+            : n + (" X " + n).repeat(d - 1) + " Tic Tac Toe";
 </script>
