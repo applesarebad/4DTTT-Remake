@@ -9,7 +9,11 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "test": "node tests/corpus.test.mjs",
+    "puzzles": "node tools/build-puzzles.mjs && node tests/corpus.test.mjs",
+    "sample": "node tools/sample-puzzles.mjs",
+    "puzzles:rethin": "node tools/build-puzzles.mjs --rethin && node tests/corpus.test.mjs"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.0",

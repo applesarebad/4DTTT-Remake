@@ -22,3 +22,12 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# Generated puzzle pipeline intermediates. Both are large and reproducible:
+# tools/sampled.json from `npm run sample` (seeded), tools/thinned.json from
+# `npm run puzzles -- --rethin`.
+tools/sampled.json
+tools/thinned.json
+
+# wrangler local dev state (local D1 database, caches)
+.wrangler/
