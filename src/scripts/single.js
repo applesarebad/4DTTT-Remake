@@ -5,6 +5,22 @@ let allLines = []
 let cpu
 
 
+let rng = Math.random
+export function setSeed(seed) {
+    if (seed === null) {
+        rng = Math.random
+        return
+    }
+    let a = seed >>> 0
+    rng = () => {
+        a = (a + 0x6d2b79f5) | 0
+        let t = Math.imul(a ^ (a >>> 15), 1 | a)
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+    }
+}
+
+
 export function getAllLines(){
     allLines = []
     let seen = new Set()
@@ -26,6 +42,88 @@ export function singleInit(computer){
     cpu = computer
     getAllLines()
 }
+
+export function winningCells(player) {
+    const opp = 3 - player
+    const out = []
+    const seen = new Set()
+    for (const line of allLines) {
+        let mine = 0, theirs = 0, gap = null
+        for (const p of line) {
+            const v = game.getState(...p)
+            if (v === player) mine++
+            else if (v === opp) { theirs++; break }
+            else gap = p
+        }
+        if (theirs > 0 || mine !== n - 1 || gap === null) continue
+        const key = gap.join(',')
+        if (!seen.has(key)) { seen.add(key); out.push(gap) }
+    }
+    return out
+}
+
+
+function threatTally(player) {
+    const opp = 3 - player
+    const tally = new Map()
+    for (const line of allLines) {
+        let mine = 0, theirs = 0
+        const empty = []
+        for (const p of line) {
+            const v = game.getState(...p)
+            if (v === player) mine++
+            else if (v === opp) { theirs++; break }
+            else empty.push(p)
+        }
+        if (theirs > 0 || mine !== n - 2) continue
+        for (const e of empty) {
+            const key = e.join(',')
+            tally.set(key, (tally.get(key) ?? 0) + 1)
+        }
+    }
+    return tally
+}
+
+const cellsWithAtLeast = (tally, k) =>
+    [...tally].filter(([, count]) => count >= k).map(([key]) => key.split(',').map(Number))
+
+export function forkCells(player) {
+    return cellsWithAtLeast(threatTally(player), 2)
+}
+
+function pickBest(cells, turn) {
+    if (cells.length <= 1) return cells[0] ?? null
+    const scores = moveFinder(turn)
+    let best = cells[0], bestScore = -Infinity
+    for (const c of cells) {
+        const s = scores[c.join(',')] ?? -Infinity
+        if (s > bestScore) { bestScore = s; best = c }
+    }
+    return best
+}
+export function forcedMove(turn) {
+    const opp = 3 - turn
+
+    const mine = winningCells(turn)
+    if (mine.length) return pickBest(mine, turn)
+
+    const theirs = winningCells(opp)
+    if (theirs.length) return pickBest(theirs, turn)
+
+    const myForks = forkCells(turn)
+    if (myForks.length) return pickBest(myForks, turn)
+
+    const tally = threatTally(opp)
+    const theirForks = cellsWithAtLeast(tally, 2)
+    if (theirForks.length === 1) return theirForks[0]
+    if (theirForks.length > 1) {
+        const counter = cellsWithAtLeast(threatTally(turn), 1)
+        if (counter.length) return pickBest(counter, turn)
+        return pickBest(theirForks, turn)
+    }
+    return null
+}
+
 export function computerMove(turn){
     if (cpu == 1) return EasyMove(turn)
     else if (cpu ==2) return MedMove(turn)
@@ -34,19 +132,21 @@ export function computerMove(turn){
 export function EasyMove(turn){
     let possible = getTop(turn, 20)
     if (obviousScore(turn) >= 1000){
-        if (Math.random() >= 0.2){
+        if (rng() >= 0.2){
             return possible[0]
         }
     }
-    return possible[Math.floor(Math.random()*possible.length)]
+    return possible[Math.floor(rng()*possible.length)]
 }
 export function MedMove(turn) {
-    return getTop(turn, 1)[0]
+    return forcedMove(turn) ?? getTop(turn, 1)[0]
 }
 export function hardMove(turn) {
-    
-    let moves = getTop(turn, 7); 
-    console.log(getTop(turn,300))
+
+    const forced = forcedMove(turn)
+    if (forced) return forced
+
+    let moves = getTop(turn, 7);
     if (moves.length == 0) return null;
     
     let depth = 6
@@ -71,10 +171,8 @@ export function hardMove(turn) {
     
     for(let move of moves){
         sim(...move, turn)
-       let eval1 = boardEval(turn)
-    let moveEval = minimax(depth-1, -Infinity, Infinity, false, turn)
-    unsim(...move)
-    console.log(move, 'immediate eval:', eval1, 'minimax eval:', moveEval)
+        let moveEval = minimax(depth-1, -Infinity, Infinity, false, turn)
+        unsim(...move)
         if (moveEval > bestEval){
             bestEval = moveEval
             bestMove = move
@@ -223,7 +321,7 @@ export function getTop(turn, x) {
     if (entries.length === 0) return [];
 
     for (let i = entries.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
+        const j = Math.floor(rng() * (i + 1));
         [entries[i], entries[j]] = [entries[j], entries[i]];
     }
     
@@ -249,11 +347,3 @@ function sim(x, y, w, z, turn) {
 function unsim(x, y, w, z) {
     boxes[x][y][w][z].state = null
 }
-
-
-
-
-//TODO: 
-// Index make buttons work
-// Make Setup actually work
-// 
