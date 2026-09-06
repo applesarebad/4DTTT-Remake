@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS attempts (
     moves      INTEGER,
     first_seen INTEGER NOT NULL,
     solved_at  INTEGER,
+    hinted     INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (day, client_id)
 );
 

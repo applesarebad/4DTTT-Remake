@@ -40,22 +40,30 @@ export function fetchStats(day) {
     return call(`/api/stats?day=${encodeURIComponent(day)}`)
 }
 
-export function report(day, outcome, moves) {
+export function report(day, outcome, moves, hinted) {
     const id = clientId()
     if (!id) return Promise.resolve(null)
     return call("/api/attempt", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ day, outcome, moves, clientId: id }),
+        body: JSON.stringify({ day, outcome, moves, hinted: !!hinted, clientId: id }),
     })
 }
 
 export function summary(stats) {
     if (!stats) return ""
-    const place = stats.position ? `you were ${ordinal(stats.position)}` : ""
-    if (stats.rate === null || stats.rate === undefined) return place
-    const pct = `${Math.round(stats.rate * 100)}% solved it`
-    return place ? `${pct} · ${place}` : pct
+    const parts = []
+    if (stats.rate !== null && stats.rate !== undefined) {
+        parts.push(`${Math.round(stats.rate * 100)}% solved it`)
+        // Only worth saying when it differs; otherwise nobody used the hint and
+        // the two numbers would read as a mistake.
+        if (stats.unaidedRate !== null && stats.unaidedRate !== undefined &&
+            Math.round(stats.unaidedRate * 100) !== Math.round(stats.rate * 100)) {
+            parts.push(`${Math.round(stats.unaidedRate * 100)}% without the hint`)
+        }
+    }
+    if (stats.position) parts.push(`you were ${ordinal(stats.position)}`)
+    return parts.join(" · ")
 }
 
 export function ordinal(n) {

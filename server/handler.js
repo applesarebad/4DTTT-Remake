@@ -56,14 +56,17 @@ function parseDay(raw) {
 function shape(day, totals, position) {
     const attempts = totals.attempts ?? 0;
     const solved = totals.solved ?? 0;
+    const unaided = totals.unaided ?? 0;
     return {
         day,
         attempts,
         solved,
+        unaided,
         // Null covers both "nobody has played" and "too few have played to
         // mean anything". Zero would be wrong for the first case — it reads as
         // a brutally hard puzzle rather than an empty one.
         rate: attempts >= MIN_SAMPLE ? solved / attempts : null,
+        unaidedRate: attempts >= MIN_SAMPLE ? unaided / attempts : null,
         ...(position != null ? { position } : {}),
     };
 }
@@ -119,6 +122,7 @@ export async function handle(request, store, options = {}) {
             outcome: body.outcome,
             moves,
             at,
+            hinted: body?.hinted === true,
         });
 
         return json(shape(day, await store.totals(day), position), 200, headers);
