@@ -190,7 +190,7 @@ for (let pass = 0; pass < 40; pass++) {
 // --- write -----------------------------------------------------------------
 const slim = order.map(i => {
     const c = chosen[i];
-    return { b: Array.from(c.board).join(""), t: c.toMove, w: c.halfMoves, r: c.m.rank };
+    return { b: Array.from(c.board).join(""), t: c.toMove, s: c.sol, w: c.halfMoves, r: c.m.rank };
 });
 fs.mkdirSync(path.dirname(OUT), { recursive: true });
 fs.writeFileSync(OUT, JSON.stringify(slim));

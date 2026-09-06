@@ -12,7 +12,7 @@ const check = (ok, msg) => { if (!ok) { failures++; console.log(`  FAIL ${msg}`)
 
 console.log(`public/puzzles.json — ${corpus.length} puzzles`);
 
-let shapeBad = 0, parityBad = 0, alreadyWon = 0, freeWin = 0, notUnique = 0, notProved = 0;
+let shapeBad = 0, parityBad = 0, alreadyWon = 0, freeWin = 0, notUnique = 0, notProved = 0, solBad = 0;
 const markCounts = [];
 
 for (let i = 0; i < corpus.length; i++) {
@@ -22,7 +22,7 @@ for (let i = 0; i < corpus.length; i++) {
     if (typeof e.b !== "string" || e.b.length !== CELLS || /[^012]/.test(e.b)) { shapeBad++; continue; }
     if (![1, 2].includes(e.t)) { shapeBad++; continue; }
     if (![3, 5].includes(e.w)) { shapeBad++; continue; }
-    if ("s" in e) { shapeBad++; console.log(`  FAIL ${where}: the solution cell must not be shipped to the client`); continue; }
+    if (!Number.isInteger(e.s) || e.s < 0 || e.s >= CELLS) { shapeBad++; continue; }
 
     const board = Uint8Array.from(e.b, c => Number(c));
     markCounts.push(board.reduce((n, v) => n + (v ? 1 : 0), 0));
@@ -37,6 +37,11 @@ for (let i = 0; i < corpus.length; i++) {
     if (pos.hasLine(1) || pos.hasLine(2)) { alreadyWon++; console.log(`  FAIL ${where}: position already contains a completed line`); continue; }
     if (pos.winCells(e.t).size > 0) { freeWin++; console.log(`  FAIL ${where}: player already has an immediate win`); continue; }
 
+    if (board[e.s] !== 0) { solBad++; console.log(`  FAIL ${where}: shipped solution cell is occupied`); continue; }
+
+    // Derived, then compared against what shipped — so this proves both that the
+    // position has exactly one forcing win and that the cell the hint will point
+    // at is that win.
     const wins = forcingWins(pos, e.t, e.w);
     if (wins.length !== 1) {
         notUnique++;
@@ -44,6 +49,7 @@ for (let i = 0; i < corpus.length; i++) {
         continue;
     }
     const sol = wins[0];
+    if (sol !== e.s) { solBad++; console.log(`  FAIL ${where}: shipped solution ${e.s} is not the forcing win ${sol}`); continue; }
     const proved = e.w === 3 ? proveWinInThree(pos, e.t, sol) : proveWinInFive(pos, e.t, sol);
     if (!proved) { notProved++; console.log(`  FAIL ${where}: exhaustive-defender proof failed`); }
 }
@@ -52,6 +58,7 @@ check(shapeBad === 0, `${shapeBad} entries are malformed`);
 check(parityBad === 0, `${parityBad} positions are unreachable under real turn order`);
 check(alreadyWon === 0, `${alreadyWon} positions already contain a line`);
 check(freeWin === 0, `${freeWin} positions hand the player a free win`);
+check(solBad === 0, `${solBad} shipped solution cells are wrong`);
 check(notUnique === 0, `${notUnique} solutions are not the unique forcing win`);
 check(notProved === 0, `${notProved} positions failed the exhaustive proof`);
 
