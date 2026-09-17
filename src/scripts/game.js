@@ -142,7 +142,7 @@ export function onClick(x, y, w, z, you) {
     onUnhover()
     claimCell(x, y, w, z, turn)
 
-    //swithciugn the border
+    //switching border
     if (prevCoord != null) get(...prevCoord).style.outline = "none"
     prevCoord = [x, y, w, z]
     get(...prevCoord).style.outline = turn === 1 ? `${2 * wmult}px solid red` : `${2 * wmult}px solid blue`
